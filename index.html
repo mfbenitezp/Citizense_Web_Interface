@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+  <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+
+<script type="text/javascript">
+
+$(document).ready(function(){ 
+	
+	$('#next').click(function(){
+		  
+	    
+	    var language = $('input[name=primitive]:checked').val();
+	    //alert(language);
+	    
+	    if (language == 'English')
+	    	{
+				window.location.href = "welcome.html";	    		
+	    	}
+	    else if (language == 'Español')
+	    	{
+	    		window.location.href = "welcome_es.html";	    			    	
+	    	}	    
+	    
+	    
+	  });
+	
+	
+	  
+});
+
+</script>
+
+</head>
+<body>
+<br><br>
+<!--Nav-->
+<nav class="navbar navbar-inverse navbar-fixed-top" style="background: #4c8dc7;">
+    <div class="container">
+        <div class="navbar-header">
+            <!--Part of left-->
+            
+            <div id="stepsUserAuth">
+                <a class="navbar-brand" href="" title="NavApps">
+                    <img src="geoc.png" alt="Geo-C" height="30px" style="display: inline">                    
+                </a>
+            <span class="navbar-brand steps">                  
+            </span>
+            </div>            
+        </div>
+        <!--Part of right-->
+        <div id="navbar" class="navbar-collapse collapse">            
+        </div><!--/.navbar-collapse -->
+    </div>
+</nav>      
+
+<div class="col-lg-2" style="background:red;"> </div>
+
+<div class="col-lg-8" > 
+
+<h2> Idioma / Language</h2>
+
+<form id="language">
+	<input id='' name='primitive' type='radio' value="Español" />Español
+    <br />
+	<input id='' name='primitive' type='radio' value="English" />English
+    <br />    
+    
+</form>
+
+<br><br>
+<button id="next" class="btn btn-primary">OK</button>
+
+</div>
+
+
+
+
+
+
+<div class="col-lg-2" style="background:red;"> </div>
+
+
+</body>
+</html>

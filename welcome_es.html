@@ -1,0 +1,112 @@
+
+
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8">
+	<title>Log In page</title>
+	<meta name="robots" content="noindex, nofollow">
+	
+	<!-- Include CSS File Here -->
+	<link rel="stylesheet" href=""/>
+	
+	<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+	
+	<!-- Bootstrap -->
+	<script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+	<link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+	
+	<!-- Include CSS File Here -->
+	
+	<script type="text/javascript" src="login_es.js"></script>
+	
+	<style type="text/css">
+	.navbar
+	{
+		background: #4c8dc7;
+	}
+	
+	</style>
+	
+</head>
+
+<body>
+
+<br><br><br>
+ <!--Nav-->
+    <nav class="navbar navbar-inverse navbar-fixed-top">
+    <div class="container">
+        <div class="navbar-header">
+            <!--Part of left-->
+            
+            <div id="stepsUserAuth">
+                <a class="navbar-brand" href="" title="NavApps">
+                    <img src="geoc.png" alt="Geo-C" height="30px" style="display: inline">
+                    
+                </a>
+            <span class="navbar-brand steps">
+                
+                
+                
+            </span>
+            </div>
+            
+        </div>
+        <!--Part of right-->
+        <div id="navbar" class="navbar-collapse collapse">
+
+            <form class="navbar-form navbar-right">
+                <!--If the person authenticate in web page these button won't appear-->
+                <div id="loginButtonsUserNoAuth">
+
+                    <div class="form-group" id="emaildiv">
+                        <input id="email" type="email" placeholder="email"
+                               name="email" size="10"
+                               class="form-control">
+                    </div>
+                    <div class="form-group" id="passworddiv">
+                        <input id="password" type="password" placeholder="password"
+                               name="password"
+                               size="10" class="form-control">
+                    </div>
+                    <button type="button" name="login" class="btn btn-success" id="login">    Iniciar sesión   </button>
+                    <button type="button"  class="btn btn-success" id="signin">             Registrarse   </button>
+                </div>
+                <!--If the person authenticate in web page these button will appear-->
+                <div id="welcomeButtonsUserAuth">
+                    <span style="color: white" id="nameSurnameLoggedUserAuth">
+                        <!--Name of user, name and surname of the login user loaded from JS-->
+                    </span>
+                    
+                    
+                </div>
+                
+            </form>
+        </div><!--/.navbar-collapse -->
+    </div>
+</nav>
+
+            
+        
+
+
+<div class="col-lg-1" style="background:red;"> </div>
+<div class="main col-lg-10">
+<form class="form" method="post" action="#">
+<h1 style="font-size: 58px;font-color: #4c8dc7;"> <font color=#4c8dc7>Citizense - Plataforma de participación ciudadana</font>            </h1> 
+
+<h2> Bienvenido a la plataforma</h2>
+
+<p style="font-size: 18px;"> Esta plataforma le asistirá en la creación de una campaña de opinion de manera fácil. Es necesario especificar ciertos parámetros de la campaña (nombre, etc), algunos parámetros opcionales (descripción, tiempo, ubicación), y posteriormente definir la lista de preguntas que van a ser presentadas a los participantes. Para empezar a crear tus campañas propias, por favor, registrate, o inicia una session si ya tienes usuario.</p>
+
+ 
+
+<a href='https://play.google.com/store/apps/details?id=geoc.esr06.gaiatascastellon2017'><img style='height: 100px;' alt='Get it on Google Play' src='https://play.google.com/intl/en_us/badges/images/generic/en_badge_web_generic.png'/></a>
+
+</form>
+</div>
+<div class="col-lg-1" style="background:blue;"> </div>
+
+</body>
+</html>
+

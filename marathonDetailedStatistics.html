@@ -1,0 +1,792 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+	<!-- Include JS File Here -->
+	<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+	
+	<!-- Include Bootstrap -->
+	<script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+	<link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+	
+	<!-- Include D3 pie chart -->
+	<script src="d3pie.min.js"></script>
+	<script src="//cdnjs.cloudflare.com/ajax/libs/d3/3.4.4/d3.min.js"></script>
+	
+	<!-- Include D3 -->
+	<script src="//cdnjs.cloudflare.com/ajax/libs/d3/3.4.4/d3.min.js"></script>
+	<script src="http://d3js.org/d3.v3.min.js"></script>
+
+<style type="text/css">
+
+body, html {
+  margin: 0;  
+  height:100%;
+}
+
+	.tablestyle{
+		/*width:100%;*/ 
+		border-collapse:collapse; 
+	}
+	.tablestyle td{ 
+		padding:7px; border:#4e95f4 1px solid;
+	}
+	/*  Define the background color for all the ODD background rows  */
+	.tablestyle tr:nth-child(odd){ 
+		background: #b8d1f3;
+	}
+	/*  Define the background color for all the EVEN background rows  */
+	.tablestyle tr:nth-child(even){
+		background: #dae5f4;
+	}
+	.highlight
+	{
+		background:red;
+	}
+	
+	.highlighthover
+	{
+		background:  #26cd77 ;
+	}
+	
+	/*chart style */
+	.chart rect {
+    fill: steelblue;
+  }
+
+  .axis path,
+  .axis line {
+    fill: none;
+    stroke: #000;
+    shape-rendering: crispEdges;
+  }
+
+  .axis text {
+    font-size: 12px;
+  }
+
+  .chart .current {
+    fill: green;
+    cursor: pointer;
+  }
+  
+  #dvTable{
+  text-align: center;
+  height:100%;
+  overflow-y: scroll; 
+}
+</style>
+
+</head>
+
+
+<body>
+<br><br><br>
+ <!--Nav-->
+    <nav class="navbar navbar-inverse navbar-fixed-top" style="background: #4c8dc7;">
+    <div class="container">
+        <div class="navbar-header">
+            <!--Part of left-->
+            
+            <div id="stepsUserAuth">
+                <a class="navbar-brand" href="http://www.geo-c.eu" title="NavApps">
+                    <img src="geoc.png" alt="Geo-C" height="30px" style="display: inline">
+                    
+                </a>
+            <span class="navbar-brand steps">                     
+            </span>
+            </div>
+            
+        </div>
+        <!--Part of right-->
+        <div id="navbar" class="navbar-collapse collapse">            
+        </div><!--/.navbar-collapse -->
+    </div>
+</nav>
+
+<div id="mainTitle"> </div>
+
+<div id="dvTable" class="col-md-2">
+
+<br><br>
+
+</div>
+
+<div id="middleColumn" class="col-md-4" >
+
+<br><br>
+
+			<!-- Common form -->
+      		<div id="commonForm"  class="specificForm">
+			
+			<form id="commonForm_innerPart" >					   
+			  Details of the question 
+			  <br>
+			  Question Text:<br>  <input type="text" class = "FreeTextSingle_input form-control" id="common_Form_QuesText" ><br>
+			  Image URL:<br>      <input type="text" class = "FreeTextSingle_input form-control" id="common_Form_QuesImage"><br>
+			  Audio URL:<br>      <input type="text" class = "FreeTextSingle_input form-control" id="common_Form_QuesAudio"><br> 
+			  
+			  <br><br>    
+			</form>		
+			</div>
+			
+			<!-- FreeTextSingle form -->
+			<div id="FreeTextSingle_specific" class="specificForm" >			
+			</div>
+			
+			<!-- FreeTextMulti form -->
+			<div id="FreeTextMulti_specific" class="specificForm" >			
+			</div>
+			
+			<!-- MultipleChoiceSingle form -->
+			<div id="MultipleChoiceSingle_specific" class="specificForm" >			
+			</div>
+			
+			<!-- MultipleChoiceMulti form -->
+			<div id="MultipleChoiceMulti_specific" class="specificForm" >			
+			</div>
+			
+			<!-- AudioSensor form -->
+			<div id="AudioSensor_specific" class="specificForm" >			
+			</div>
+			
+			<!-- ContRange form -->
+			<div id="ContRange_specific"  class="specificForm">
+			
+			<b>Minimum value</b> of the range:<br>	<input type="text" class = "ContRange_input form-control" id="ContRange_min"><br> 
+			<b>Maximum value</b> of the range:<br>	<input type="text" class = "ContRange_input form-control" id="ContRange_max"><br>
+						
+			</div>
+			
+			<!-- FreeNumericSingle form -->
+			<div id="FreeNumericSingle_specific">			
+			</div>
+			
+			
+
+</div>
+
+<div id="right" class="col-md-6">
+
+<br><br>
+
+</div>
+
+</body>
+
+<script type="text/javascript">
+$( document ).ready(function() {
+	
+	const FreeTextSingle_const = 'FreeTextSingle';
+	const FreeTextMulti_const = 'FreeTextMulti';
+	const MultipleChoiceSingle_const = 'MultipleChoiceSingle';
+	const MultipleChoiceMulti_const = 'MultipleChoiceMulti';
+	const ContRange_const = 'ContRange';
+	const AudioSensor_const = 'AudioSensor';	
+	const TextDisplay_const = 'TextDisplay';
+	const FreeNumericSingle_const = 'FreeNumericSingle';
+	
+	function recursiveGetProp(obj, lookup, callback) {
+	    for (property in obj) {
+	        if (property == lookup) {
+	            callback(obj[property]);
+	        } else if (obj[property] instanceof Object) {
+	            recursiveGetProp(obj[property], lookup, callback);
+	        }
+	    }
+	}
+	
+	$('.specificForm').hide();
+	
+	function drawPieChart(dataArray, question) {
+		
+		var pie = new d3pie("right", {
+			"header": {
+				"title": {
+					"text": question,
+					"fontSize": 24,
+					"font": "open sans"
+				},
+				"titleSubtitlePadding": 9
+			},			
+			"size": {
+				"canvasWidth": 590,
+				"pieOuterRadius": "90%"
+			},
+			"data": {
+				"sortOrder": "value-desc",
+				"content": dataArray
+			},
+			"labels": {
+				"outer": {
+					"pieDistance": 32
+				},
+				"inner": {
+					"format": "value"
+				},
+				"mainLabel": {
+					"font": "verdana"
+				},
+				"percentage": {
+					"color": "#e1e1e1",
+					"font": "verdana",
+					"decimalPlaces": 0
+				},
+				"value": {
+					"color": "#e1e1e1",
+					"font": "verdana"
+				},
+				"lines": {
+					"enabled": true,
+					"color": "#cccccc"
+				},
+				"truncation": {
+					"enabled": true
+				}
+			},
+			"effects": {
+				"pullOutSegmentOnClick": {
+					"effect": "linear",
+					"speed": 400,
+					"size": 8
+				}
+			}
+		});		    
+	}
+	
+function drawBarChart(dataArray) {
+	
+		var maxY = 0;		
+		for (var i=0;i< dataArray.length;i++)
+			if (dataArray[i].value > maxY)
+				maxY = dataArray[i].value;
+		console.log('MaxY value is ' + maxY);
+		
+		var svgHeight = 400;
+        var svgWidth = 600;
+        var maxAge = 65; // You can also compute this from the data
+        var barSpacing = 1; // The amount of space you want to keep between the bars
+        var padding = {
+            left: 30, right: 0,
+            top: 20, bottom: 20
+        };
+        
+        function animateBarsUp() {
+            var maxWidth = svgWidth - padding.left - padding.right;
+            var maxHeight = svgHeight - padding.top - padding.bottom;
+
+            // Define your conversion functions
+            var convert = {    
+              x: d3.scale.ordinal(),
+              y: d3.scale.linear()
+            };
+
+            // Define your axis
+            var axis = {
+              x: d3.svg.axis().orient('bottom'),
+              y: d3.svg.axis().orient('left')
+            };
+              
+            // Define the conversion function for the axis points
+            axis.x.scale(convert.x);
+            axis.y.scale(convert.y);
+
+            // Define the output range of your conversion functions
+            convert.y.range([maxHeight, 0]);
+            convert.x.rangeRoundBands([0, maxWidth]);
+              
+            // Once you get your data, compute the domains
+            convert.x.domain(dataArray.map(function (d) {
+                return d.label;
+              })
+            );
+            convert.y.domain([0, maxY]);
+
+            // Setup the markup for your SVG
+            var svg = d3.select('.chart')
+              .attr({
+                  width: svgWidth,
+                  height: svgHeight
+              });
+            
+            // The group node that will contain all the other nodes
+            // that render your chart
+            var chart = svg.append('g')
+              .attr({
+                  transform: function (d, i) {
+                    return 'translate(' + padding.left + ',' + padding.top + ')';
+                  }
+                });
+              
+            chart.append('g') // Container for the axis
+              .attr({
+                class: 'x axis',
+                transform: 'translate(0,' + maxHeight + ')'
+              })
+              .call(axis.x); // Insert an axis inside this node
+
+            chart.append('g') // Container for the axis
+              .attr({
+                class: 'y axis',
+                height: maxHeight
+              })
+              .call(axis.y); // Insert an axis inside this node
+
+            var bars = chart
+              .selectAll('g.bar-group')
+              .data(dataArray)
+              .enter()
+              .append('g') // Container for the each bar
+              .attr({
+                transform: function (d, i) {
+                  return 'translate(' + convert.x(d.label) + ', 0)';
+                },
+                class: 'bar-group'
+              });
+
+            bars.append('rect')
+                  .attr({
+                  y: maxHeight,
+                  height: 0,
+                  width: function(d) {return convert.x.rangeBand(d) - 1;},
+                  class: 'bar'
+              })
+              .transition()
+              .duration(1500)
+              .attr({
+                y: function (d, i) {
+                  return convert.y(d.value);
+                },
+                height: function (d, i) {
+                  return maxHeight - convert.y(d.value);
+                }
+              });
+
+            return chart;
+          }
+
+          animateBarsUp();
+        
+        
+		
+		
+	}
+	
+	//alert('CampaignID is ' + sessionStorage.selection);
+	
+	$.post(			                
+            "marathonReadCampaign.php",
+            { 
+            	data: sessionStorage.selection 			                  
+            },
+            function(data) { 
+			
+				console.log('Returned data is ' + data);
+            	
+            	document.getElementById("mainTitle").innerHTML = 'This is statistics for campaign ' + sessionStorage.selection;  	
+            	
+            	var answerArrayString = sessionStorage.answerArray;
+            	
+            	console.log('answerArray is ' + answerArrayString);
+            	var answerArray = JSON.parse(answerArrayString);
+            	console.log('Length of answerArray is ' + answerArray.length);            	
+                
+               //alert('Return data is ' + data);	
+               var returnData = JSON.parse(data); 
+               
+               var campaignString;
+               
+               recursiveGetProp(returnData, 'campaign_Config', function(obj) 
+            		   {							
+							campaignString = obj;										
+					    });	
+               
+               var campaign = JSON.parse(campaignString);
+               
+               var questionArray = [];
+               questionArray.push(['Questions of the campaign']);
+               
+               for (var i = 0; i< campaign.Question_Array.length;i++)
+            	   {
+            	   		questionArray.push( [campaign.Question_Array[i].quesID] );
+            	   }
+               
+               //alert(JSON.stringify(questionArray));                       
+               
+             //Create a HTML Table element.
+	       	    var table = document.createElement("TABLE");
+	            table.setAttribute("id","mytable");
+	            table.setAttribute("class", "tablestyle");
+	       	    table.border = "1";
+	       	    
+	       	//Get the count of columns.
+	       	    var columnCount = questionArray[0].length;
+	       	 
+	       	    //Add the header row.
+	       	    var row = table.insertRow(-1);
+	       	    for (var i = 0; i < columnCount; i++) {
+	       	        var headerCell = document.createElement("TH");
+	       	        headerCell.innerHTML = questionArray[0][i];
+	       	        row.appendChild(headerCell);
+	       	    }
+	       	 
+	       	    //Add the data rows.
+	       	    for (var i = 1; i < questionArray.length; i++) {
+	       	        row = table.insertRow(-1);
+	       	        for (var j = 0; j < columnCount; j++) {
+	       	            var cell = row.insertCell(-1);
+	       	            cell.innerHTML = questionArray[i][j];
+	       	        }
+	       	    }
+	       	 
+	       	    var dvTable = document.getElementById("dvTable");
+	       	    //dvTable.innerHTML = "";
+	       	    dvTable.appendChild(table);	
+	       	    
+	       	 var br = document.createElement('br');
+	       	dvTable.appendChild(br);
+	       	dvTable.appendChild(br);
+	       	    
+	       	//Create a HTML button element.
+	       	    var button = document.createElement("input");
+	       	 	button.setAttribute("id","dashboard");
+	       	 	button.setAttribute("type","button");
+	       		button.setAttribute("class", "btn btn-success");
+	       		button.setAttribute("value", "RETURN TO DASHBOARD");
+	       		button.onclick = function() 
+	       			{ // Note this is a function
+	       				window.location.href = "marathonDashboard.html";
+	       		  	};
+	       		
+	            dvTable.appendChild(button);
+	       	    
+	       	    $('td').addClass('abc');
+	       	    
+	       	 $(function () {
+		     		$('td').mouseenter(function() {
+		     			$('td').removeClass('highlighthover');
+		     			$(this).toggleClass('highlighthover');					     			
+		     			
+		     		});
+		     	});
+		       	$(function () {
+		     		$('td').mouseleave(function() {
+		     			$('td').removeClass('highlighthover');
+		     			//$(this).toggleClass('highlighthover');	     			
+		     		});
+		     	});
+		       	
+		       	function addRowHandlers() {
+		     	    var table = document.getElementById("mytable");
+		     	    var rows = table.getElementsByTagName("tr");
+		     	    for (i = 0; i < rows.length; i++) {
+		     	        var currentRow = table.rows[i];
+		     	        var createClickHandler = 
+		     	            function(row) 
+		     	            {
+		     	                return function() { 
+		     	                						
+		     	                		  $('#right').empty();
+		     	                		  
+		     	                		  $('#commonForm').hide();
+		     	                		  
+     	                                  var cell = row.getElementsByTagName("td")[0];
+     	                                  var id = cell.innerHTML;
+     	                                  console.log("You have selected " + id);
+     	                                     
+     	                                  for (var i=0;i<campaign.Question_Array.length;i++)
+     	                                     	{
+     	                                      		if (campaign.Question_Array[i].quesID == id)
+     	                                       			{
+     	                                      				if (campaign.Question_Array[i].quesType == FreeTextSingle_const)
+     	                                      				{
+ 	                                       						console.log('Here is question of type ' + campaign.Question_Array[i].quesType); 	                                       						
+ 	                                       						$('#commonForm').show();
+ 	                                       						$('#common_Form_QuesText').val(campaign.Question_Array[i].quesLabel[0]);
+ 	                                       						$('#common_Form_QuesImage').val(campaign.Question_Array[i].quesLabel[1]);
+ 	                                       						$('#common_Form_QuesAudio').val(campaign.Question_Array[i].quesLabel[2]);
+ 	                                       						
+ 	                                       						var answerFreeTextSingle = [];     	                                       						
+ 	                                       						answerFreeTextSingle.push(['Answers of the question ' + id]);
+ 	                                       						
+																
+ 	                                       						for (var a=0;a < answerArray.length;a++)
+ 	                                       							{
+ 	                                       								var submissionObj = JSON.parse(answerArray[a]);
+ 	                                       								for (var b=0;b < submissionObj.length;b++ )
+ 	                                       									{
+ 	                                       										var questionReply = submissionObj[b];
+ 	                                       										if (questionReply.questionID == id)
+ 	                                       											{
+																						console.log(JSON.stringify(questionReply));
+																						console.log(questionReply.list[0]);
+																						answerFreeTextSingle.push([questionReply.list[0]]);     	                                       													
+																						/*
+ 	                                       												if (questionReply.questionType == FreeTextSingle_const)   
+ 	                                       												{
+     	                                       												console.log(questionReply.list[0]);
+     	                                       												answerFreeTextSingle.push([questionReply.list[0]]);     	                                       													
+ 	                                       												} */                                      												
+ 	                                       											}
+ 	                                       									}
+ 	                                       							}
+ 	                                       						console.log(JSON.stringify(answerFreeTextSingle));
+																
+																
+ 	                                       				
+ 	                                       					//Create a HTML Table element.
+ 	                                       		       	    var table_FreeTextSingle = document.createElement("TABLE");
+ 	                                       		       		table_FreeTextSingle.setAttribute("id","FreeTextSingle_Answer");
+ 	                                       		       		table_FreeTextSingle.setAttribute("class", "tablestyle FreeTextSingle_table");
+ 	                                       		       		table_FreeTextSingle.border = "1";
+ 	                                       		       	    
+ 	                                       		       		//Get the count of columns.
+ 	                                       		       	    var columnCount = answerFreeTextSingle[0].length;
+															
+ 	                                       		       	    //Add the header row.
+ 	                                       		       	    var rowFreeTextSingle = table_FreeTextSingle.insertRow(-1);
+ 	                                       		       	    for (var index = 0; index < columnCount; index++) {
+ 	                                       		       	        var headerCell = document.createElement("TH");
+ 	                                       		       	        headerCell.innerHTML = answerFreeTextSingle[0][index];
+ 	                                       		       	 		rowFreeTextSingle.appendChild(headerCell);
+ 	                                       		       	    }
+															
+ 	                                       		       	    //Add the data rows.
+ 	                                       		       	    for (var index1 = 1; index1 < answerFreeTextSingle.length; index1++) {
+ 	                                       		       	 		rowFreeTextSingle = table_FreeTextSingle.insertRow(-1);
+ 	                                       		       	        for (var index2 = 0; index2 < columnCount; index2++) {
+ 	                                       		       	            var cell = rowFreeTextSingle.insertCell(-1);
+ 	                                       		       	            cell.innerHTML = answerFreeTextSingle[index1][index2];
+ 	                                       		       	        }
+ 	                                       		       	    }
+ 	                                       		       	 	
+ 	                                       		       	    var right = document.getElementById("right");
+ 	                                       		       	    //dvTable.innerHTML = "";
+ 	                                       		       	    right.appendChild(table_FreeTextSingle);
+
+															
+ 	                                       					}
+     	                                      				
+     	                                      				else if (campaign.Question_Array[i].quesType == FreeTextMulti_const)
+     	                                      					{
+     	                                      					
+     	                                      					console.log('Here is question of type ' + campaign.Question_Array[i].quesType); 	                                       						
+ 	                                       						$('#commonForm').show();
+ 	                                       						$('#common_Form_QuesText').val(campaign.Question_Array[i].quesLabel[0]);
+ 	                                       						$('#common_Form_QuesImage').val(campaign.Question_Array[i].quesLabel[1]);
+ 	                                       						$('#common_Form_QuesAudio').val(campaign.Question_Array[i].quesLabel[2]);
+     	                                      					
+     	                                      					}
+     	                                      				//If clicked quesiton is MultipleChoiceSingle
+     	                                      				else if (campaign.Question_Array[i].quesType == MultipleChoiceSingle_const)
+     	                                       					{
+     	                                      					
+     	                                      					console.log('Here is question of type ' + campaign.Question_Array[i].quesType); 	                                       						
+ 	                                       						$('#commonForm').show();
+ 	                                       						$('#common_Form_QuesText').val(campaign.Question_Array[i].quesLabel[0]);
+ 	                                       						$('#common_Form_QuesImage').val(campaign.Question_Array[i].quesLabel[1]);
+ 	                                       						$('#common_Form_QuesAudio').val(campaign.Question_Array[i].quesLabel[2]);
+ 	                                       						
+     	                                       						var question = campaign.Question_Array[i].quesLabel[0];
+     	                                       						console.log('Here is a MultipleChoiceSingle');
+     	                                       						var subcomponent = campaign.Question_Array[i].subcomponent;
+     	                                       						console.log('Length of subcomponent is ' + subcomponent.length);                                						
+		     	                                       						
+     	                                       						var subcomponentCount = [];
+     	                                       						for (var k = 0;k < subcomponent.length;k++ )
+     	                                       							subcomponentCount.push(0);
+     	                                       						console.log('Length of subcomponentCount is ' + subcomponentCount.length); 	                                       						
+     	                                       						
+     	                                       						for (var j = 0;j < answerArray.length; j++)
+     	                                       							{
+     	                                       								console.log(answerArray[j]);
+     	                                       								var submissionObj = JSON.parse(answerArray[j]);
+     	                                       								console.log('Size of submissionObj is ' + submissionObj.length);
+     	                                       								for (var h=0;h<submissionObj.length;h++)
+     	                                       									{		     	                                       										
+     	                                       										var questionReply = submissionObj[h];
+     	                                       										console.log(JSON.stringify(questionReply));
+     	                                       										if (questionReply.questionID == id)
+     	                                       											{
+		     	                                       										if (questionReply.questionType == MultipleChoiceSingle_const)
+		 	                                       											{
+		 	                                       												
+		 	                                       												for (var x=0;x < subcomponent.length; x ++)
+		 	                                       													if (subcomponent[x] == questionReply.list[0] )
+		 	                                       														subcomponentCount[x]++;
+		 	                                       											}  
+     	                                       											
+     	                                       											}
+     	                                       										 	                                       										
+     	                                       									}	     	                                       								
+     	                                       							}
+     	                                       						var array = [];
+     	                                       						for (var k = 0;k < subcomponent.length;k++ ) 	array.push({"label":subcomponent[k],"value":subcomponentCount[k]});    	                                       							
+     	                                       						
+     	                                       						console.log(JSON.stringify(array));
+		     	                                       				
+     	                                       						//-----------------------------     	                                       						
+																	drawPieChart(array, question);																			
+		     	                                       				//-----------------------------
+     	                                       					}
+     	                                       				//If cliecked question is MultipleChoiceMulti
+     	                                       				else if (campaign.Question_Array[i].quesType == MultipleChoiceMulti_const)
+     	                                       					{
+     	                                       					
+     	                                       					console.log('Here is question of type ' + campaign.Question_Array[i].quesType); 	                                       						
+	                                       						$('#commonForm').show();
+	                                       						$('#common_Form_QuesText').val(campaign.Question_Array[i].quesLabel[0]);
+	                                       						$('#common_Form_QuesImage').val(campaign.Question_Array[i].quesLabel[1]);
+	                                       						$('#common_Form_QuesAudio').val(campaign.Question_Array[i].quesLabel[2]);
+	                                       						
+     	                                       						console.log('Here is a MultipleChoiceMulti');
+	     	                                       					var subcomponent = campaign.Question_Array[i].subcomponent;
+	 	                                       						console.log('Length of subcomponent is ' + subcomponent.length); 
+	 	                                       						console.log('Subcomponent is ' + JSON.stringify(subcomponent));
+		     	                                       						
+	 	                                       						var subcomponentCount = [];
+	 	                                       						for (var k = 0;k < subcomponent.length;k++ )
+	 	                                       							subcomponentCount.push(0);
+	 	                                       						console.log('Length of subcomponentCount is ' + subcomponentCount.length); 
+	 	                                       						
+		 	                                       					for (var j = 0;j < answerArray.length; j++)
+		                                       							{
+		                                       								console.log(answerArray[j]);
+		                                       								var submissionObj = JSON.parse(answerArray[j]);
+		                                       								console.log('Size of submissionObj is ' + submissionObj.length);
+		                                       								for (var h=0;h<submissionObj.length;h++)
+		                                       									{		     	                                       										
+		                                       										var questionReply = submissionObj[h];
+		                                       										console.log(JSON.stringify(questionReply));
+		                                       										if (questionReply.questionType == MultipleChoiceMulti_const)
+		                                       											{		                                       												
+		                                       												for (var x=0;x < subcomponent.length; x ++)		                                       													
+		                                       														for (var b=0;b<questionReply.list.length;b++)		                                       															
+		                                       																if (questionReply.list[b] == subcomponent[x])
+			                                       																subcomponentCount[x]++;		                                       															                                       													
+		                                       											}   	                                       										
+		                                       									}	     	                                       								
+		                                       							}	 	                                       					
+	 	                                       						console.log(JSON.stringify(subcomponentCount));
+		 	                                       					var data = [];
+	 	                                       						for (var k = 0;k < subcomponent.length;k++ ) 	
+	 	                                       							data.push({"label":subcomponent[k],"value":subcomponentCount[k]});
+	 	                                       						console.log(JSON.stringify(data));
+	 	                                       						
+	 	                                       					drawBarChart(data);
+	 	                                       						
+	 	                                       						//Draw bar chart	 	                                       							 	                                       						
+	 	                                       						$('<div class="chart-container"> <svg class="chart"> </svg> </div> ').appendTo('#right');
+	 	                                       						drawBarChart(data);                     						
+     	                                       						
+     	                                       					}
+     	                                      				//If clicked question is ContRange
+     	                                       				else if (campaign.Question_Array[i].quesType == ContRange_const)
+     	                                       					{
+     	                                       					
+     	                                       					console.log('Here is question of type ' + campaign.Question_Array[i].quesType); 	                                       						
+	                                       						$('#commonForm').show();
+	                                       						$('#common_Form_QuesText').val(campaign.Question_Array[i].quesLabel[0]);
+	                                       						$('#common_Form_QuesImage').val(campaign.Question_Array[i].quesLabel[1]);
+	                                       						$('#common_Form_QuesAudio').val(campaign.Question_Array[i].quesLabel[2]);
+     	                                       					
+     	                                       					}
+     	                                       				else if (campaign.Question_Array[i].quesType == AudioSensor_const)
+     	                                       					{
+     	                                       					
+     	                                       					console.log('Here is question of type ' + campaign.Question_Array[i].quesType); 	                                       						
+	                                       						$('#commonForm').show();
+	                                       						$('#common_Form_QuesText').val(campaign.Question_Array[i].quesLabel[0]);
+	                                       						$('#common_Form_QuesImage').val(campaign.Question_Array[i].quesLabel[1]);
+	                                       						$('#common_Form_QuesAudio').val(campaign.Question_Array[i].quesLabel[2]);
+     	                                       					
+     	                                       					}
+     	                                       				else if (campaign.Question_Array[i].quesType == FreeNumericSingle_const)
+																{
+																	console.log('Here is question of type ' + campaign.Question_Array[i].quesType); 	                                       						
+																	$('#commonForm').show();
+																	$('#common_Form_QuesText').val(campaign.Question_Array[i].quesLabel[0]);
+																	$('#common_Form_QuesImage').val(campaign.Question_Array[i].quesLabel[1]);
+																	$('#common_Form_QuesAudio').val(campaign.Question_Array[i].quesLabel[2]);
+																	
+																	var answerFreeNumericSingle = [];     	                                       						
+																	answerFreeNumericSingle.push(['Answers of the question ' + id]);
+																	
+																	
+																	for (var a=0;a < answerArray.length;a++)
+																		{
+																			var submissionObj = JSON.parse(answerArray[a]);
+																			for (var b=0;b < submissionObj.length;b++ )
+																				{
+																					var questionReply = submissionObj[b];
+																					if (questionReply.questionID == id)
+																						{
+																							console.log(JSON.stringify(questionReply));
+																							console.log(questionReply.list[0]);
+																							answerFreeNumericSingle.push([questionReply.list[0]]);     	                                       													
+																							/*
+																							if (questionReply.questionType == FreeTextSingle_const)   
+																							{
+																								console.log(questionReply.list[0]);
+																								answerFreeTextSingle.push([questionReply.list[0]]);     	                                       													
+																							} */                                      												
+																						}
+																				}
+																		}
+																	console.log(JSON.stringify(answerFreeNumericSingle));
+																	
+																	
+															
+																//Create a HTML Table element.
+																var table_FreeNumericSingle = document.createElement("TABLE");
+																table_FreeNumericSingle.setAttribute("id","FreeTextSingle_Answer");
+																table_FreeNumericSingle.setAttribute("class", "tablestyle FreeTextSingle_table");
+																table_FreeNumericSingle.border = "1";
+																
+																//Get the count of columns.
+																var columnCount = answerFreeNumericSingle[0].length;
+																
+																//Add the header row.
+																var rowFreeNumericSingle = table_FreeNumericSingle.insertRow(-1);
+																for (var index = 0; index < columnCount; index++) {
+																	var headerCell = document.createElement("TH");
+																	headerCell.innerHTML = answerFreeNumericSingle[0][index];
+																	rowFreeNumericSingle.appendChild(headerCell);
+																}
+																
+																//Add the data rows.
+																for (var index1 = 1; index1 < answerFreeNumericSingle.length; index1++) {
+																	rowFreeNumericSingle = table_FreeNumericSingle.insertRow(-1);
+																	for (var index2 = 0; index2 < columnCount; index2++) {
+																		var cell = rowFreeNumericSingle.insertCell(-1);
+																		cell.innerHTML = answerFreeNumericSingle[index1][index2];
+																	}
+																}
+																
+																var right = document.getElementById("right");
+																//dvTable.innerHTML = "";
+																right.appendChild(table_FreeNumericSingle);
+
+																
+																}
+     	                                       					
+     	                                       						     	                                       					
+     	                                       			}
+     	                                       	}	                                            	                                        
+     	                            };
+     	            };
+		     	        currentRow.onclick = createClickHandler(currentRow);
+		     	    }
+		     	}
+		     	window.onload = addRowHandlers();      	               
+               			                              
+            }
+         );
+	
+			
+	
+});
+</script>
+
+
+</html>

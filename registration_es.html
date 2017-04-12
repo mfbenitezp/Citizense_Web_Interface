@@ -1,0 +1,102 @@
+
+
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Registration Page - Citizense</title>
+<meta name="robots" content="noindex, nofollow">
+<!-- Include CSS File Here -->
+<link rel="stylesheet" href="css/style.css"/>
+<!-- Include JS File Here -->
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+
+	<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+	<link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+	
+	<script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+	<link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+	
+<script type="text/javascript" src="registration_es.js"></script>
+
+<style type="text/css">
+
+th, td {
+    padding: 5px;
+    text-align: left;
+}
+</style>
+
+</head>
+<body>
+<div class="container">
+<!--Nav-->
+    <nav class="navbar navbar-inverse navbar-fixed-top" style="background: #4c8dc7;">
+    <div class="container">
+        <div class="navbar-header">
+            <!--Part of left-->
+            
+            <div id="stepsUserAuth">
+                <a class="navbar-brand" href="" title="NavApps">
+                    <img src="geoc.png" alt="Geo-C" height="30px" style="display: inline">
+                    
+                </a>
+            <span class="navbar-brand steps">
+                
+                
+                
+            </span>
+            </div>
+            
+        </div>
+        <!--Part of right-->
+        <div id="navbar" class="navbar-collapse collapse">            
+        </div><!--/.navbar-collapse -->
+    </div>
+</nav>
+<br><br>
+
+<div class="col-lg-2"></div>
+
+
+<div class="main col-lg-8">
+	<form class="form" method="post" action="#">
+	<h2>Por favor, rellene el formulario para registrarse en la plataforma</h2>
+	<br>
+	<table style="width:80%">
+		  <tr>
+		    <th>Tu nombre</th>
+		    <th> <input type="text"        class = "form-control" name="dname" id="name"> </th>
+		  </tr> 
+		  
+		  <tr>   
+		    <th>Email</th>
+		    <th> <input type="text"        class = "form-control" name="demail" id="email"> </th>
+		  </tr>
+		  
+		  <tr>     
+		    <th>Contraseña</th>
+		    <th> <input type="password"    class = "form-control"name="password" id="password"> </th>
+		  </tr>
+		    
+		  <tr>
+		    <th>Confirmar la contraseña</th>
+		    <th> <input type="password"    class = "form-control"name="cpassword" id="cpassword"> </th>
+		  </tr>  
+	</table>
+
+	
+	<br>
+	<input type="button" class="btn btn-primary" name="register" id="register" value="Registrarse">
+	</form>
+	
+	
+	
+</div>
+
+<div class="col-lg-2"></div>
+
+</div>
+</body>
+</html>
+

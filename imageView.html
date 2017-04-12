@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<!-- Include JS File Here -->
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+
+<script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+<link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+
+
+
+<style type="text/css">
+
+
+
+	.tablestyle{
+		/*width:100%;*/ 
+		border-collapse:collapse; 
+	}
+	.tablestyle td{ 
+		padding:7px; border:#4e95f4 1px solid;
+	}
+	/*  Define the background color for all the ODD background rows  */
+	.tablestyle tr:nth-child(odd){ 
+		background: #b8d1f3;
+	}
+	/*  Define the background color for all the EVEN background rows  */
+	.tablestyle tr:nth-child(even){
+		background: #dae5f4;
+	}
+	.highlight
+	{
+		background:red;
+	}
+	
+	.highlighthover
+	{
+		background:  #26cd77 ;
+	}
+</style>
+
+<script type="text/javascript">
+
+$( document ).ready(function() {
+	
+	var canvas=document.getElementById('cv');
+var ctx= canvas.getContext('2d');
+
+var img = new Image();
+img.onload= drawImageScaled.bind(null, img, ctx);
+
+  
+function drawImageScaled(img, ctx) {
+   var canvas = ctx.canvas ;
+   var hRatio = canvas.width  / img.width    ;
+   var vRatio =  canvas.height / img.height  ;
+   var ratio  = Math.min ( hRatio, vRatio );
+   var centerShift_x = ( canvas.width - img.width*ratio ) / 2;
+   var centerShift_y = ( canvas.height - img.height*ratio ) / 2;  
+   ctx.clearRect(0,0,canvas.width, canvas.height);
+   ctx.drawImage(img, 0,0, img.width, img.height,
+                      centerShift_x,centerShift_y,img.width*ratio, img.height*ratio);  
+}
+
+//img.src = 'http://s1.dmcdn.net/BhdSy/526x297-KuG.jpg';
+img.src = 'UserUploadedPic/www.jpg';
+	
+});
+</script>
+
+</head>
+
+<body>
+
+<br><br><br>
+ <!--Nav-->
+    <nav class="navbar navbar-inverse navbar-fixed-top" style="background: #4c8dc7;">
+    <div class="container">
+        <div class="navbar-header">
+            <!--Part of left-->
+            
+            <div id="stepsUserAuth">
+                <a class="navbar-brand" href="" title="NavApps">
+                    <img src="geoc.png" alt="Geo-C" height="30px" style="display: inline">
+                    
+                </a>
+            <span class="navbar-brand steps">
+                
+                
+                
+            </span>
+            </div>
+            
+        </div>
+        <!--Part of right-->
+        <div id="navbar" class="navbar-collapse collapse">
+
+            
+        </div><!--/.navbar-collapse -->
+    </div>
+</nav>
+
+
+<div>
+    <!-- <button id="edit">Edit</button> -->
+    <!-- <button id="create">Create</button> -->
+    
+</div>
+
+<div id="left" class="col-lg-4">
+
+<br>
+
+</div>
+
+<div id="right" class="col-lg-8">
+
+<canvas id='cv'></canvas>
+
+
+<br><br>
+
+</div>
+
+
+
+
+<br>
+
+
+
+</body>
+</html>
+
+<!-- <div class="im"> <img id="thumbnail1" src="UserUploadedPic/user24!1491482587008.jpg" width="300" height="300"> </div> -->

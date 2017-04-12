@@ -1,0 +1,63 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+   <title>Max's AJAX File Uploader</title>
+   <link href="style_ajax.css" rel="stylesheet" type="text/css" />
+<script src="https://code.jquery.com/jquery-2.0.3.min.js"></script>
+
+<script language="javascript" type="text/javascript">
+    $(document).ready(function () {
+	
+		
+        $("#submitForm").click(function () {
+            var formData = new FormData($('#uploadForm')[0]);
+			selectedFile = document.getElementById('fileSelector').value
+			console.log('Start uploading ' + document.getElementById('fileSelector').value);
+            $.ajax({
+                method: "POST",
+                url: 'upload_ajax.php',
+                data: formData,
+                success : function( res ) {
+                    if(res=="OK"){
+                        alert("Upload Successful");
+                    }else{
+                        alert("Error when upload. Please try again !");
+                    }
+                },
+                error:  function(res){
+                    console.log(res);
+                },
+                processData: false,
+                contentType: false,
+            });
+        });
+    });
+</script>
+</head>
+
+<body>
+
+       <form id="uploadForm" action="upload_ajax.php" method="post" enctype="multipart/form-data" target="upload_target" >
+                     <!-- <p id="f1_upload_process">Loading...<br/><img src="loader.gif" /><br/></p> -->
+					 Question Text:<br>  <input type="text" class = "FreeTextSingle_input form-control" id="FreeTextSingle_Form_QuesText" ><br>
+			  
+			  You can attach a photo
+			  
+                     <p id="f1_upload_form" ><br/>
+                         <label>File:  
+                              <input id="fileSelector" name="myfile" type="file" size="30" />
+                         </label>
+                     </p>
+       </form>
+	   
+       <button id="submitForm">Upload</button>
+	   
+	   
+	   
+	   
+	   
+                 
+</body>
+
+</html>

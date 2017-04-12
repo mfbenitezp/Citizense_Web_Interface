@@ -1,0 +1,2803 @@
+<!doctype html>
+<html>
+
+<head>
+	<meta charset="UTF-8">
+	<title>Campaign Creator - Step 2</title>
+
+	<script src="https://code.jquery.com/jquery-2.0.3.min.js"></script>
+	
+	<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+	<link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+	
+	<script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+	<link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">	
+	
+	<!-- Import quesType definitions -->
+	<script src="quesTypeUpdated.js"></script>
+	
+	<script src="cytoscape.js"></script>
+
+	<style type="text/css">
+	
+	
+
+	body {
+  font-family: helvetica;
+  font-size: 14px;
+}
+
+#cy {
+  border: solid;
+  border-width: 1;
+  height: 500px;
+}
+
+h1 {
+  opacity: 0.5;
+  font-size: 1em;
+}
+
+.button_custom_color {
+   background-color:  #4c8dc7  !important;
+}
+	</style>
+	
+	<script type="text/javascript">
+	
+	$( document ).ready(function() {
+		const FreeTextSingle_const           = 'FreeTextSingle';
+		const FreeTextMulti_const            = 'FreeTextMulti';
+		const MultipleChoiceSingle_const     = 'MultipleChoiceSingle';
+		const MultipleChoiceMulti_const      = 'MultipleChoiceMulti';
+		const ContRange_const                = 'ContRange';
+		const AudioSensor_const              = 'AudioSensor';	
+		const TextDisplay_const              = 'TextDisplay';
+		const FreeNumericSingle_const        = 'FreeNumericSingle';
+		const UploadPhoto_const				 = 'UploadPhoto';	
+		
+		
+		
+		console.log('Load ID is: ' + sessionStorage.CamID_Session);
+		console.log('Load Description is: ' + sessionStorage.CamDescription_Session);
+		console.log('Load onetimeBoolean is: ' + sessionStorage.onetimeBoolean_Session );
+		console.log('Load expiry Boolean is: ' + sessionStorage.expiryBoolean_Session);
+		console.log('Load startDate is: ' + sessionStorage.startDate_Session  );
+		console.log('Load endDate: ' + sessionStorage.endDate_Session );
+		console.log('Load AreaOfInterest_Boolean: ' + sessionStorage.AreaOfInterestBoolean_Session);
+		console.log('Load AreaOfInterest_Geography_list: ' + sessionStorage.AreaOfInterest_Session);
+		console.log('Load AreaOfInterest_WebMecartor_List: ' + sessionStorage.WebMercator_Session);
+		console.log('Load showResultBoolean: ' + sessionStorage.showResultBoolean);
+		
+		var Campaign_ID             = sessionStorage.CamID_Session;
+		var Campaign_Description    = sessionStorage.CamDescription_Session;
+		var onetimeValue            = sessionStorage.onetimeBoolean_Session;
+		var expiry                  = sessionStorage.expiryBoolean_Session;
+		var start_date              = sessionStorage.startDate_Session;
+		var end_date                = sessionStorage.endDate_Session;
+		var StartQues = '';
+		var Question_Array = [];
+		var Campaign_Workflow = [];
+		var geoBoolean              = sessionStorage.AreaOfInterestBoolean_Session;
+		var Area_List               = JSON.parse(sessionStorage.AreaOfInterest_Session);
+		var Area_List_WebMercator   = JSON.parse(sessionStorage.WebMercator_Session);
+		var question_number = 1;
+		var subcomponent_count = 0;
+		var geo_component = 0;	
+		var ID_of_edited_question = '';
+		var userID                  = sessionStorage.userID_Session;
+		var nodeSequence = [];
+		var selectedFile = '';
+		//alert('UserID obtained from sessionStorage is ' + userID);
+		
+		var extrinsicBooleanValue = false;
+		var incentiveList		  = [];
+		var incentiveContact	  = '';
+		
+		var showResult 			  = sessionStorage.showResultBoolean;
+		
+		//print variable
+		console.log('Variable CamID is ' + Campaign_ID);
+		console.log('Variable CamDes is ' + Campaign_Description);
+		console.log('Variable onetimeValue is ' + onetimeValue);
+		console.log('Variable expiry is ' + expiry);
+		console.log('Variable start_date is ' + start_date);
+		console.log('Variable end_date is ' + end_date);
+		console.log('Variable StartQues is ' + StartQues);
+		console.log('Variable Question_Array is ' + Question_Array);
+		console.log('Variable Campaign_Workflow is ' + Campaign_Workflow);
+		console.log('Variable geoBoolean is ' + geoBoolean);
+		console.log('Variable Area_List is ' + JSON.stringify(Area_List));
+		console.log('Variable Area_List_WebMercator is ' + JSON.stringify(Area_List_WebMercator));
+		console.log('Variable userID is ' + userID);
+		console.log('Variable nodeSequence is ' + JSON.stringify(nodeSequence));
+		console.log('Length of nodeSequence is ' + nodeSequence.length);
+		
+		
+		$('[data-toggle="FreeTextSingle-tooltip"]').tooltip(); 
+		$('[data-toggle="FreeTextMulti-tooltip"]').tooltip();
+		$('[data-toggle="MultipleChoiceSingle-tooltip"]').tooltip();
+		$('[data-toggle="MultipleChoiceMulti-tooltip"]').tooltip();
+		$('[data-toggle="AudioSensor-tooltip"]').tooltip();
+		$('[data-toggle="TextDisplay-tooltip"]').tooltip();
+		
+		$('[data-toggle="Delete-tooltip"]').tooltip();
+		$('[data-toggle="Duplicate-tooltip"]').tooltip();
+		$('[data-toggle="Start-tooltip"]').tooltip();
+		
+		$( "#help_window" ).dialog({ autoOpen: false });
+		$('#help_graph_div').dialog( { autoOpen: false } );
+		
+		$( "#help" ).click(function() {
+			
+			$( "#help_window" ).dialog( "open" );
+		});
+		
+		$( "#help_graph_button" ).click(function() {
+			
+			$( "#help_graph_div" ).dialog( "open" );
+		});
+		
+		function resetSession()
+		{
+			sessionStorage.CamID_Session                 = null;
+			sessionStorage.CamDescription_Session        = null;
+			sessionStorage.onetimeBoolean_Session        = null;
+			sessionStorage.expiryBoolean_Session         = null;
+			sessionStorage.startDate_Session             = null;
+			sessionStorage.endDate_Session               = null;
+			sessionStorage.AreaOfInterestBoolean_Session = null;
+			sessionStorage.AreaOfInterest_Session        = null;
+			sessionStorage.WebMercator_Session           = null;			
+		}
+		
+		// Show/hide the parameter of the conditional transition
+		$("input[name='primitive']").click(function () {
+	    $('#value_0').css('display', ($(this).val() === 'value') ? 'block':'none');
+	    $('#values_0').css('display', ($(this).val() === 'values') ? 'block':'none');
+	    $('#count_0').css('display', ($(this).val() === 'count') ? 'block':'none');
+	});
+		
+		
+		
+	
+	//$(function() {		  
+
+		  var cy = window.cy = cytoscape({
+		    container: document.getElementById('cy'),
+
+		    zoom: 1.5,
+			wheelSensitivity: 0.05,
+			minZoom: 1,
+		    maxZoom: 20,
+
+		    // panningEnabled: false,
+		    //boxSelectionEnabled: true,
+		    //autounselectify: false,
+		    //selectionType: 'additive',
+		    //autoungrabify: true,		    
+
+		    style: [{
+                selector: 'node',
+                style: {                          
+                    label: 'data(id)',
+                    "text-valign":"center",
+                    "text-halign":"center",
+                }
+            },{
+                selector: 'node.highlight',
+                style: {
+                    'border-color': 'red',
+                    'border-width': '4px'
+                }
+            },{
+                selector: 'node.normal',
+                style: {
+              	  label: 'data(id)',
+                    "text-valign":"center",
+                    "text-halign":"center"
+                }
+            },
+
+            {
+				selector: 'edge',
+				style: {
+					'width': 2,
+					'target-arrow-shape': 'triangle',
+					'line-color': '#9dbaea',
+					'target-arrow-color': '#9dbaea',
+					'curve-style': 'bezier'
+				}
+			},{
+				selector: 'edge:selected',
+				style: {
+					'width': 5,
+					'target-arrow-shape': 'triangle',
+					'line-color': 'green',
+					'target-arrow-color': '#9dbaea',
+					'curve-style': 'bezier'
+				}
+			}
+			
+
+		      
+		    ],
+
+		    elements: {
+		      //selectable: false, 
+		      grabbable: false,
+		      nodes: [], // nodes
+		      edges: [] // edges
+		    } // elements
+		  }); // cytoscape
+		  
+		//}); // ready
+		
+		//-----------------------------------------------Click on NODE
+			cy.on('click', 'node', { foo: 'bar' }, function(evt){
+				  console.log( evt.data.foo ); // 'bar'				  
+				  
+				  $('.edit_form').hide();
+				  $('#display_hide').show();
+				  
+				  $('.subcomponent').remove();
+
+				  var node = evt.cyTarget;
+				  console.log( 'tapped ' + node.id() );
+				  
+				  ID_of_edited_question = node.id();
+				  
+				  var question =  null;
+					for (var i=0;i<Question_Array.length;i++)
+						  {
+						  	if (Question_Array[i].getID() === ID_of_edited_question) 
+						  		{    		  		
+						  			question = Question_Array[i];    		  		
+						  		}   		  	
+						  }
+					  console.log(question.getID() + ' ' + question.getType());
+					  
+					  if (question.getType() == FreeTextSingle_const)
+					  {
+					  	$('#commonDivEdit').show();
+					  	$('#FreeTextSingle_Form').show();
+					  	
+					  	$('#commonEdit_QuesText').val(  question.getLabel()[0]   );
+					  	$('#commonEdit_QuesPicURL').val( question.getLabel()[1]   );
+						if ( question.getLabel()[1] == '' ) $('#removePic').hide();
+					  	//$('#FreeTextSingle_Form_QuesAudio').val( question.getLabel()[2]   );
+					  	
+					  }
+				  else if (question.getType() == FreeTextMulti_const)
+					  {			  	
+					  	var subcomponent_array = [];
+					  	var size = question.getSubcomponent().length;
+					  	subcomponent_count = size;
+					  	console.log('The size of subcomponent is ' + size);
+					  	console.log('The current question selected to be edited is ' + ID_of_edited_question);
+					  	
+					  	$('#commonDivEdit').show();
+					  	$('#FreeTextMulti_Form').show();
+					  	
+					  	$('#commonEdit_QuesText').val(  question.getLabel()[0]   );
+					  	$('#commonEdit_QuesPicURL').val( question.getLabel()[1]   );
+						if ( question.getLabel()[1] == '' ) $('#removePic').hide();						  	
+					  	
+					  	for (var i=0;i< size;i++)
+					  		{
+					  			//Add a new div
+								$('<div id="' + ID_of_edited_question + '_subcomponent_div' + i + '" class = "subcomponent_FreeTextMulti hover_action subcomponent" </div>').appendTo("#commonDivEdit");
+							
+								//Add text "Sub-Component" to the newly-created div
+								$('<p id ="' + ID_of_edited_question + '_subcomponent_text_' + i + '" class = "subcomponent_FreeTextMulti">').text('Sub-question').appendTo("#" + ID_of_edited_question + '_subcomponent_div' + i);
+								
+								//Add textfield to the newly-created div
+								$('<input type="text" class = "subcomponent_FreeTextMulti" id="' + ID_of_edited_question + '_subcomponent_' + i + '"></input>' ).appendTo("#" + ID_of_edited_question + '_subcomponent_div' + i);
+								$('#' + ID_of_edited_question + '_subcomponent_' + i).val( question.getSubcomponent()[i] );
+								
+								//Add REMOVE button to the newly-created div
+								$('<button id="Delete_subcomponent_' + i + '" type="button" class="btn btn-danger" style="display: none;"> <span class="glyphicon glyphicon-remove-sign"></span> Remove </button>')
+								.click(function(){
+									
+									var thisButton_ID = $(this).attr('id');
+									console.log(thisButton_ID);
+									var subcomponent_index = thisButton_ID.substring(thisButton_ID.lastIndexOf('_')+1, thisButton_ID.length );
+									console.log(subcomponent_index);
+									$('#' + ID_of_edited_question + '_subcomponent_div' + subcomponent_index).remove();
+									//subcomponent_count--;
+												              
+						            })
+								.appendTo("#" + ID_of_edited_question + '_subcomponent_div' + i);					  			
+					  		}				  
+					  }
+				  else if (question.getType() == MultipleChoiceSingle_const)
+					  {
+					  	var subcomponent_array = [];
+					  	var size = question.getSubcomponent().length;
+					  	subcomponent_count = size;
+					  	console.log('The size of subcomponent is ' + size);
+					  	console.log('The current question selected to be edited is ' + ID_of_edited_question);
+					  	
+					  	$('#commonDivEdit').show();
+					  	$('#MultipleChoiceSingle_Form').show();
+					  	
+					  	$('#commonEdit_QuesText').val(  question.getLabel()[0]   );
+					  	$('#commonEdit_QuesPicURL').val( question.getLabel()[1]   );
+						if ( question.getLabel()[1] == '' ) $('#removePic').hide();	  					  	
+					  	
+					  	for (var i=0;i< size;i++)
+					  		{
+					  			//Add a new div
+								$('<div id="' + ID_of_edited_question + '_subcomponent_div' + i + '" class = "subcomponent_MultipleChoiceSingle hover_action subcomponent" </div>').appendTo("#commonDivEdit");
+							
+								//Add text "Sub-Component" to the newly-created div
+								$('<p id ="' + ID_of_edited_question + '_subcomponent_text_' + i + '" class = "subcomponent_MultipleChoiceSingle">').text('Option').appendTo("#" + ID_of_edited_question + '_subcomponent_div' + i);
+								
+								//Add textfield to the newly-created div
+								$('<input type="text" class = "subcomponent_MultipleChoiceSingle" id="' + ID_of_edited_question + '_subcomponent_' + i + '"></input>' ).appendTo("#" + ID_of_edited_question + '_subcomponent_div' + i);
+								$('#' + ID_of_edited_question + '_subcomponent_' + i).val( question.getSubcomponent()[i] );
+								
+								//Add REMOVE button to the newly-created div
+								$('<button id="Delete_subcomponent_' + i + '" type="button" class="btn btn-danger" style="display: none;"> <span class="glyphicon glyphicon-remove-sign"></span> Remove </button>')
+								.click(function(){
+									
+									var thisButton_ID = $(this).attr('id');
+									console.log(thisButton_ID);
+									var subcomponent_index = thisButton_ID.substring(thisButton_ID.lastIndexOf('_')+1, thisButton_ID.length );
+									console.log(subcomponent_index);
+									$('#' + ID_of_edited_question + '_subcomponent_div' + subcomponent_index).remove();
+									//subcomponent_count--;
+												              
+						            })
+								.appendTo("#" + ID_of_edited_question + '_subcomponent_div' + i);
+					  			
+					  		}
+					  
+					  }
+				  else if (question.getType() == MultipleChoiceMulti_const)
+					  {
+							  var subcomponent_array = [];
+							  	var size = question.getSubcomponent().length;
+							  	subcomponent_count = size;
+							  	console.log('The size of subcomponent is ' + size);
+							  	console.log('The current question selected to be edited is ' + ID_of_edited_question);
+							  	
+							  	$('#commonDivEdit').show();
+							  	$('#MultipleChoiceMulti_Form').show();
+							  	
+							  	$('#commonEdit_QuesText').val(  question.getLabel()[0]   );
+								$('#commonEdit_QuesPicURL').val( question.getLabel()[1]   );
+								if ( question.getLabel()[1] == '' ) $('#removePic').hide();	  	
+							  	
+							  	
+							  	for (var i=0;i< size;i++)
+							  		{
+							  			//Add a new div
+										$('<div id="' + ID_of_edited_question + '_subcomponent_div' + i + '" class = "subcomponent_MultipleChoiceMulti hover_action subcomponent" </div>').appendTo("#commonDivEdit");
+									
+										//Add text "Sub-Component" to the newly-created div
+										$('<p id ="' + ID_of_edited_question + '_subcomponent_text_' + i + '" class = "subcomponent_MultipleChoiceMulti">').text('Sub-Component').appendTo("#" + ID_of_edited_question + '_subcomponent_div' + i);
+										
+										//Add textfield to the newly-created div
+										$('<input type="text" class = "subcomponent_MultipleChoiceMulti" id="' + ID_of_edited_question + '_subcomponent_' + i + '"></input>' ).appendTo("#" + ID_of_edited_question + '_subcomponent_div' + i);
+										$('#' + ID_of_edited_question + '_subcomponent_' + i).val( question.getSubcomponent()[i] );
+										
+										//Add REMOVE button to the newly-created div
+										$('<button id="Delete_subcomponent_' + i + '" type="button" class="btn btn-danger" style="display: none;"> <span class="glyphicon glyphicon-remove-sign"></span> Remove </button>')
+										.click(function(){
+											
+											var thisButton_ID = $(this).attr('id');
+											console.log(thisButton_ID);
+											var subcomponent_index = thisButton_ID.substring(thisButton_ID.lastIndexOf('_')+1, thisButton_ID.length );
+											console.log(subcomponent_index);
+											$('#' + ID_of_edited_question + '_subcomponent_div' + subcomponent_index).remove();
+											//subcomponent_count--;
+														              
+								            })
+										.appendTo("#" + ID_of_edited_question + '_subcomponent_div' + i);
+							  			
+							  		}			  
+					  }
+				  else if (question.getType() == AudioSensor_const)
+				  		{
+							  	$('#commonDivEdit').show();
+							  	$('#AudioSensor_Form').show();
+						  	
+						  		$('#commonEdit_QuesText').val(  question.getLabel()[0]   );
+								$('#commonEdit_QuesPicURL').val( question.getLabel()[1]   );
+								if ( question.getLabel()[1] == '' ) $('#removePic').hide();	  
+				 		}	
+				  else if (question.getType() == TextDisplay_const)
+				  {
+					  	$('#commonDivEdit').show();
+					  	$('#TextDisplay_Form').show();
+					  	
+					  	$('#commonEdit_QuesText').val(  question.getLabel()[0]   );
+						$('#commonEdit_QuesPicURL').val( question.getLabel()[1]   );
+						if ( question.getLabel()[1] == '' ) $('#removePic').hide();	  
+					  	
+					  }
+				  else if (question.getType() == FreeNumericSingle_const)
+				  {
+					  	$('#commonDivEdit').show();
+					  	$('#FreeNumericSingle_Form').show();
+						console.log('Here is a FreeNumericSingle ques');
+					  	
+					  	$('#commonEdit_QuesText').val(  question.getLabel()[0]   );
+						$('#commonEdit_QuesPicURL').val( question.getLabel()[1]   );
+						if ( question.getLabel()[1] == '' ) $('#removePic').hide();	  
+					  	
+					  }
+				  else if (question.getType() == ContRange_const)
+				  {
+				  
+						console.log('here is a ContRange question');
+				  
+						
+					  	$('#commonDivEdit').show();
+						console.log('commonDivEdit showed');
+					  	$('#ContRange_Form').show();
+					  	
+					  	$('#commonEdit_QuesText').val(  question.getLabel()[0]   );
+						$('#commonEdit_QuesPicURL').val( question.getLabel()[1]   );
+						if ( question.getLabel()[1] == '' ) $('#removePic').hide();	  
+					  	
+					  	$('#ContRange_min').val (question.getSubcomponent()[0]);
+					  	$('#ContRange_max').val (question.getSubcomponent()[1]);
+					  	
+					  }
+				else if (question.getType() == UploadPhoto_const)
+				  {
+					  	$('#commonDivEdit').show();
+					  	$('#UploadPhoto_Form').show();
+						console.log('Here is a UploadPhoto ques');
+					  	
+					  	$('#commonEdit_QuesText').val(  question.getLabel()[0]   );
+						$('#commonEdit_QuesPicURL').val( question.getLabel()[1]   );
+						if ( question.getLabel()[1] == '' ) $('#removePic').hide();	
+
+						$('#uploadForm').hide();
+						$('#submitForm').hide();						
+					  	
+					  }
+				  
+				  $('#selection').val(node.id());
+				  
+				  question = null;
+				  
+				  
+				});
+		
+			//-----------------------------------------------Click on EDGE
+			cy.on('tap', 'edge', { foo: 'khoi' }, function(evt){
+				  //console.log( evt.data.foo ); // 'khoi'
+			
+				  var edge = evt.cyTarget;
+				  console.log( 'edge ' + edge.id() );
+				  $('#selection').val(edge.id());
+				  
+				  
+				  
+				  var this_edge = cy.$('#' + edge.id());
+				  var source = this_edge.source();
+				  var target = this_edge.target();
+				  console.log(source.id() + ' -------> ' + target.id());
+				});
+			
+			//---------------------------------------------------Hover on NODE
+		    cy.on('mousemove','node', function(event){
+		        var node = event.cyTarget;
+		        var sourceName = node.id();        
+		        
+		        var content = '';
+		        var quesType = '';
+		        
+		        var positionX;
+		        var positionY;
+		        
+		        for (var i=0;i<Question_Array.length;i++)
+		      	  {
+		      	  	if (Question_Array[i].getID() == sourceName)
+		      	  		{
+		      	  			content = Question_Array[i].getLabel()[0];
+		      	  			quesType = Question_Array[i].getType();
+		      	  			positionX = cy.$('#' + sourceName).position('x');
+		      	  			positionY = cy.$('#' + sourceName).position('y');
+		      	  		}
+		      	  		
+		      	  	
+		      	  }
+		        $('#' + sourceName).remove();
+		        $('<div id="' + sourceName + '"> This question is: ' + content + ' , of type ' + quesType + '</div>').appendTo("#cy");        
+
+		        console.log('The position is ' + positionX + ' ' + positionY);           
+		            
+		});
+		    cy.on('mouseout','node', function(event){
+		  	  var node = event.cyTarget;
+		        var sourceName = node.id();
+		        
+					var content = '';
+		        
+		        for (var i=0;i<Question_Array.length;i++)
+		      	  {
+		      	  	if (Question_Array[i].getID() == sourceName)
+		      	  		content = Question_Array[i].getLabel()[0];
+		      	  }
+		        
+		      $('#' + sourceName).remove();
+		  	  
+		    }); 
+		    
+		    function getNodePositionX()
+		    {
+		    	if (nodeSequence.length == 0)
+		    		return 20;
+		    	else
+		    		{
+			    		var lastNode = nodeSequence[nodeSequence.length-1];
+				    	var positionX = cy.$('#' + lastNode).position('x');		  
+				    	return positionX;		    		
+		    		}		    	
+		    }
+		    function getNodePositionY()
+		    {
+		    	if (nodeSequence.length == 0)
+		    		return 20;
+		    	else
+		    		{
+			    		var lastNode = nodeSequence[nodeSequence.length-1];
+				    	var positionY = cy.$('#' + lastNode).position('y');		  
+				    	return positionY;		    			
+		    		}		    	
+		    }
+		    
+		    $(".begin_step2").hide();
+		    
+		    function addNode(questionID)
+		    {
+		    	cy.add({
+	        	 	   group: "nodes",
+	        	  	  data: { id: questionID },
+	        		    //position: { x: question_number * 20 , y: question_number * 20  }
+	        	  		position: { x: getNodePositionX() + 30 , y: getNodePositionY() + 30  }
+	      		 	});   		    	
+		    }
+		    
+		    function addDefaultTransition(questionID)
+		    {
+		    	//Add the default transition ("end transition") to the question just created
+     	 		var blank_condition = [];
+     	 		var temp_WorkflowElement = new Workflow_Element(questionID,blank_condition);
+    			Campaign_Workflow.push(temp_WorkflowElement); 		    	
+		    }
+			
+			function addTransition(listOfQuestion)
+			{
+				if (listOfQuestion.length >= 2)
+				{
+					var origin         = listOfQuestion[listOfQuestion.length-2];
+					var destination   = listOfQuestion[listOfQuestion.length-1];
+					
+					console.log('add a new edge');
+					console.log('Length of sequence is ' + listOfQuestion.length);
+					console.log('Origin is ' + origin);
+					console.log('Destination is ' + destination);
+		    	
+					cy.add({
+						group: "edges",
+						data: { id: origin + '-' + destination, source: origin, target: destination }
+					});
+					
+					var tempBranch = new Branch("true",destination);
+					var condition = [];
+					condition.push(tempBranch);
+					
+					var i;
+					for (i=0;i<Campaign_Workflow.length;i++)
+						{
+							if (Campaign_Workflow[i].getQuesID() == origin) 
+								{
+									console.log(origin + ' is duplicated');
+									Campaign_Workflow[i].getCondition().push(tempBranch);			 			
+								}
+						}		
+					//var temp_WorkflowElement = new Workflow_Element(origin,condition);
+					//Campaign_Workflow.push(temp_WorkflowElement);
+					
+					//reset text fields
+					$('.default_tran').val('');
+					//hide the div
+					$('#default_transition').hide();
+					
+					$("#display_hide").show();
+										
+				}
+				
+			}
+			
+			$('#listQuestionType').on('change', function() {
+	      if ( this.value == '0')	      
+	      {
+	    	  $('.begin_step2').hide();
+			  resetCommonForm();
+			  $('<p class="addedText"> Esta tarea presenta una pregunta y espera una única respuesta de texto de los participantes. </p>').prependTo('#commonDiv');
+			  $('#commonDiv').show();
+	    	  $('#FreeTextSingle_Form').show();				
+	      }
+	      else if ( this.value == '1')
+	      {
+	    	  $('.begin_step2').hide();
+			  resetCommonForm();
+			  $('<p class="addedText"> Esta tarea presenta una pregunta con varias sub-preguntas y espera respuestas de texto para esas sub-preguntas. </p>').prependTo('#commonDiv');
+			  $('#commonDiv').show();
+	    	  $('#FreeTextMulti_Form').show();					
+	      }
+	      else if ( this.value == '2')
+	      {
+	    	  $('.begin_step2').hide();
+			  resetCommonForm();
+			  $('<p class="addedText"> Esta tarea presenta una pregunta de múltiples opciones y espera una única respuesta del participante.</p>').prependTo('#commonDiv');
+			  $('#commonDiv').show();
+	    	  $('#MultipleChoiceSingle_Form').show();
+				
+	      }
+		  else if ( this.value == '3')
+	      {
+	    	  $('.begin_step2').hide();
+			  resetCommonForm();
+			  $('<p class="addedText"> Esta tarea presenta una pregunta de múltiples opciones y espera una o varias respuestas del participante.</p>').prependTo('#commonDiv');
+			  $('#commonDiv').show();
+	    	  $('#MultipleChoiceMulti_Form').show();
+				
+	      }
+		  else if ( this.value == '4')
+	      {
+	    	  $('.begin_step2').hide();
+			  resetCommonForm();
+			  $('<p class="addedText"> This task serves as a text notice to the participants</p>').prependTo('#commonDiv');
+			  $('#commonDiv').show();
+	    	  $('#TextDisplay_Form').show();
+				
+	      }
+		  else if ( this.value == '6')
+	      {
+	    	  $('.begin_step2').hide();
+			  resetCommonForm();
+			  $('<p class="addedText"> Esta tarea espera una respuesta numérica de los participantes. </p>').prependTo('#commonDiv');
+			  $('#commonDiv').show();
+	    	  $('#FreeNumericSingle_Form').show();
+				
+	      }
+		  else if ( this.value == '7')
+	      {
+	    	  $('.begin_step2').hide();
+			  resetCommonForm();
+			  $('<p class="addedText"> Esta tarea presenta un rango numérico a los participantes y estos deben seleccionar un valor.</p>').prependTo('#commonDiv');
+			  $('#commonDiv').show();
+	    	  $('#ContRange_Form').show();
+				
+	      }
+		  else if ( this.value == '8')
+	      {
+	    	  $('.begin_step2').hide();
+			  resetCommonForm();
+			  $('<p class="addedText"> This task asks participants to upload a photo (either already in their phone gallery or capture using the phone camera ) </p>').prependTo('#commonDiv');
+			  $('#commonDiv').show();
+	    	  $('#UploadPhoto_Form').show();
+			  $('#uploadForm').hide();
+			  $('#submitForm').hide();
+			  $('#photo_attach_text').hide();
+				
+	      }
+	      else $('.begin_step2').hide();
+	    });
+		
+		function cleaseText(filePath)
+		    {
+				var cleanedText;
+				console.log('filePath is ' + filePath);
+				if (filePath.includes('\\'))
+					{
+						console.log('The filePath is ' + filePath + ', it contains character \\' );
+						var lastIndex = filePath.lastIndexOf('\\');
+						console.log('The last index of \\ is ' + lastIndex);
+						
+						cleanedText = filePath.substring(lastIndex +1, filePath.length);
+						console.log('The cleaned text is ' + cleanedText);						
+					}
+				else cleanedText = filePath;
+				
+				return cleanedText;
+		    }
+		
+		$("#submitForm").click(function () {
+            var formData = new FormData($('#uploadForm')[0]);	
+				formData.append("userID",userID);
+			
+			selectedFile = cleaseText(document.getElementById('fileSelector').value);
+			
+			console.log('Start uploading ' + selectedFile);
+			
+            $.ajax({
+                method: "POST",
+                url: 'upload_ajax.php',
+                data: formData,
+                success : function( res ) {
+                    if(res=="OK"){
+                        alert("Upload file " + selectedFile + " successful");
+                    }else{
+                        alert("Error when upload. Please try again !");
+                    }
+                },
+                error:  function(res){
+                    console.log(res);
+                },
+                processData: false,
+                contentType: false,
+            });
+			
+        });
+		
+		$("#removePic").click(function () {  
+			$('#commonEdit_QuesPicURL').val('');    
+					
+		});
+		
+		
+		
+		$("#uploadNewPic").click(function () {
+            var formData = new FormData($('#uploadFormEdit')[0]);			
+			
+			selectedFile = cleaseText(document.getElementById('fileSelector').value);
+			
+			console.log('Start uploading ' + selectedFile);
+			
+            $.ajax({
+                method: "POST",
+                url: 'upload_ajax.php',
+                data: formData,
+                success : function( res ) {
+                    if(res=="OK"){
+                        alert("Upload file " + selectedFile + " successful");
+                    }else{
+                        alert("Error when upload. Please try again !");
+                    }
+                },
+                error:  function(res){
+                    console.log(res);
+                },
+                processData: false,
+                contentType: false,
+            });
+			
+        });
+		
+		
+		function resetCommonForm()
+		    {
+		    	document.getElementById('uploadForm').reset();
+				//reset text fields
+		    	$('#common_QuesText').val('');	
+				//hide commonDivEdit
+				$('#commonDiv').hide();
+				$('.addedText').remove();
+				
+				//Reset quesType dropdown menu
+				$('#listQuestionType').each(function() { this.selectedIndex = 0 });
+				$('#removePic').show();
+				
+				selectedFile = '';
+				
+				$('#uploadForm').show();
+				$('#submitForm').show();
+				$('#photo_attach_text').show();
+		    }
+			
+		function resetCommonFormEdit()
+		    {
+		    	document.getElementById('uploadFormEdit').reset();
+				//reset text fields
+		    	$('#commonEdit_QuesText').val('');	
+				//hide commonDiv
+				$('#commonDivEdit').hide();
+				$('.addedText').remove();
+				
+				//Reset quesType dropdown menu
+				$('#listQuestionType').each(function() { this.selectedIndex = 0 });
+				$('#removePic').show();
+				
+				selectedFile = '';
+				
+				$('#uploadForm').show();
+				$('#submitForm').show();
+				$('#photo_attach_text').show();
+		    }
+			
+			function checkFirstQuestion(quesSequence, quesID)
+			{
+				
+				if (quesSequence.length == 1)
+				{
+					console.log('Hey, here is the first question of the campaign: ' + quesID);
+					
+					StartQues = quesID;
+		    		var a = cy.$("#" + StartQues);	
+		    		a.addClass('highlight');			
+				}
+				
+			}
+			
+		    
+		  //---------------------------------FreeTextSingle-----------------------------------
+		    $('#FreeTextSingle').on('click', function(e) {
+		    	console.log('question_number is ' + question_number);
+		    	$('.question').hide();
+		    	$('.quesTrans').hide();
+		    	$('#FreeTextSingle_Form').show();
+		    	$("#display_hide").hide();
+		    });
+
+		    $('#FreeTextSingle_Cancel').on('click', function(e) {
+		    	
+		    	//reset text fields
+		    	$('.FreeTextSingle_input').val('');
+		    	//hide the form
+		    	$('#FreeTextSingle_Form').hide();
+		    	resetCommonFormEdit();
+				resetCommonForm();
+		    	
+		    	ID_of_edited_question = '';
+		    	
+		    });
+
+		    $('#FreeTextSingle_Save').on('click', function(e) {
+		    	console.log('question_number is ' + question_number);
+		    	//A new FreeTextSingle is created
+		    	if (ID_of_edited_question == '')
+		    		{
+		    			var quesID = "Q" + question_number;
+		    			question_number++;
+		    			var quesType = FreeTextSingle_const;
+		    			//var quesLabel = [$('#common_QuesText').val(),'http://www.citizense.uji.es/Pic/' + selectedFile ,''/*blank value for audio URL*/];
+						var quesLabel = [$('#common_QuesText').val(),(selectedFile == '') ? '':'http://www.citizense.uji.es/Pic/' + selectedFile ,''/*blank value for audio URL*/];
+						console.log('quesLabel is ' + JSON.stringify(quesLabel));
+		    			var temp = new FreeTextSingle(quesID, quesType, quesLabel);
+		    			Question_Array.push(temp);		
+		    		
+		    			/*
+		    			//Visually add the node(by default it is disconnected) to the graph
+		      			cy.add({
+		        	 	   group: "nodes",
+		        	  	  data: { id: quesID },
+		        		    //position: { x: question_number * 20 , y: question_number * 20  }
+		        	  		position: { x: getNodePositionX() + 30 , y: getNodePositionY() + 30  }
+		      		 	});
+		    			*/
+		    			addNode(quesID);
+		    			addDefaultTransition(quesID);
+		    			/*
+		    			//Add the default transition ("end transition") to the question just created
+		     	 		var blank_condition = [];
+		     	 		var temp_WorkflowElement = new Workflow_Element(quesID,blank_condition);
+		    			Campaign_Workflow.push(temp_WorkflowElement); 
+		      			*/
+		      			
+		      			
+		     	 		//reset text fields
+		    			$('.FreeTextSingle_input').val('');		
+		    			//hide the form
+		    			$('#FreeTextSingle_Form').hide();
+		    			$("#display_hide").show();	
+		    			nodeSequence.push(quesID);
+		    			console.log('The nodeSequence is ' + JSON.stringify(nodeSequence));
+						
+						resetCommonForm();
+						
+						addTransition(nodeSequence);	
+						checkFirstQuestion(nodeSequence, quesID);						
+		    		}
+		    	
+		    	//A FreeTextSingle is being edited, 
+		    	else 
+		    		{
+		    			for (var i=0;i<Question_Array.length;i++)
+		    				{
+		    					if (Question_Array[i].getID()  == ID_of_edited_question)
+		    						{
+		    							console.log("Question found, data is " + Question_Array[i].getID() + ' ' + Question_Array[i].getLabel());
+		    							Question_Array.splice(i,1);
+		    						}
+		    				}
+		    			var quesID = ID_of_edited_question;
+		    			var quesType = FreeTextSingle_const;
+		    			var quesLabel = [$('#commonEdit_QuesText').val(),(selectedFile == '') ? $('#commonEdit_QuesPicURL').val():'http://www.citizense.uji.es/Pic/' + selectedFile,''/*blank value for audio URL*/];
+		    			var temp = new FreeTextSingle(quesID, quesType, quesLabel);
+		    			Question_Array.push(temp);
+		    			
+		    			ID_of_edited_question = '';
+		    			
+		    			//reset text fields
+		    			$('.FreeTextSingle_input').val('');		
+		    			//hide the form
+		    			$('#FreeTextSingle_Form').hide();
+		    			resetCommonFormEdit();			
+		    		}		    	
+		    	
+		    });
+			
+			
+		    
+		  //-----------------------------------FreeTextMulti---------------------------------
+		    $('#FreeTextMulti').on('click', function(e) {	
+		    	console.log('question_number is ' + question_number);
+		    	$('.question').hide();
+		    	$('.quesTrans').hide();
+		    	$('#FreeTextMulti_Form').show();
+		    	$("#display_hide").hide();
+		    });
+
+		    $('#FreeTextMulti_Cancel').on('click', function(e) {
+		    	
+		    	//reset text fields
+		    	$('.FreeTextMulti_input').val('');
+		    	//hide the form
+		    	$('#FreeTextMulti_Form').hide();
+		    	resetCommonFormEdit();
+				resetCommonForm();
+		    	
+		    	ID_of_edited_question = '';
+		    	
+		    	$('.subcomponent_FreeTextMulti').remove();
+		    	$('#edit_node').hide();
+		    });
+
+		    $('#FreeTextMulti_Save').on('click', function(e) {
+		    	console.log('question_number is ' + question_number);
+		    	if (ID_of_edited_question == '')
+		    		{
+		    				var subcomponent_array = [];
+		    				var quesID = "Q" + question_number;
+		    				question_number++;
+		    				var quesType = FreeTextMulti_const;
+		    				var quesLabel = [$('#common_QuesText').val(),(selectedFile == '') ? '':'http://www.citizense.uji.es/Pic/' + selectedFile ,''/*blank value for audio URL*/];
+		    				
+		    				for(var i=0;i<subcomponent_count;i++)
+		    				  {
+		    				  var ID = quesID + '_subcomponent_' + i;
+		    				  console.log(ID);
+		    				  console.log(   $('#' + ID).val()      );
+		    				  if (  $('#' + ID).length  )
+		    				  {
+		    				  		if ($('#' + ID).val() != '') subcomponent_array.push(  $('#' + ID).val()  );
+		    				  }
+		    				  }	
+		    				
+		    				//Add the new FreeTextMulti to the Question_Array of the Campaign
+		    				var temp = new FreeTextMulti(quesID, quesType, quesLabel, subcomponent_array);
+		    				Question_Array.push(temp);
+		    				
+		    				addNode(quesID);
+			    			addDefaultTransition(quesID);
+		    				
+		    				//reset text fields
+		    				$('.FreeTextMulti_input').val('');
+		    				$(".subcomponent_FreeTextMulti").remove()  ;
+		    				
+		    				//hide the form
+		    				$('#FreeTextMulti_Form').hide();	
+		    				
+		    				//reset the variable that counts the subcomponent
+		    				subcomponent_count = 0;
+		    				$("#display_hide").show();	
+		    				nodeSequence.push(quesID);
+		    				console.log('The nodeSequence is ' + JSON.stringify(nodeSequence));
+							
+							resetCommonForm();
+							
+							addTransition(nodeSequence);	
+							checkFirstQuestion(nodeSequence, quesID);													
+		    		}
+		    	
+		    	else
+		    		{
+		    			for (var i=0;i<Question_Array.length;i++)
+		    			{
+		    				if (Question_Array[i].getID()  == ID_of_edited_question)
+		    					{
+		    						console.log("Question found, data is " + Question_Array[i].getID() + ' ' + Question_Array[i].getLabel());
+		    						Question_Array.splice(i,1);
+		    					}
+		    			}
+		    			
+		    			var subcomponent_array = [];
+		    			var quesID = ID_of_edited_question;
+		    			var quesType = FreeTextMulti_const;
+		    			var quesLabel = [$('#commonEdit_QuesText').val(),(selectedFile == '') ? $('#commonEdit_QuesPicURL').val():'http://www.citizense.uji.es/Pic/' + selectedFile,''/*blank value for audio URL*/];
+		    			
+		    			for(var i=0;i<subcomponent_count;i++)
+		    			  {
+		    			  	var ID = quesID + '_subcomponent_' + i;
+		    			  	console.log(ID);
+		    			  	console.log(   $('#' + ID).val()      );
+		    			  	if (  $('#' + ID).length  )
+		    				  {
+		    				  		if ($('#' + ID).val() != '') subcomponent_array.push(  $('#' + ID).val()  );
+		    				  }
+		    			  }	
+		    			
+		    			//Add the new FreeTextMulti to the Question_Array of the Campaign
+		    			var temp = new FreeTextMulti(quesID, quesType, quesLabel, subcomponent_array);
+		    			Question_Array.push(temp);
+		    			
+		    			ID_of_edited_question = '';
+		    			
+		    			//reset text fields
+		    			$('.FreeTextMulti_input').val('');
+		    			$(".subcomponent_FreeTextMulti").remove()  ;
+		    			
+		    			//hide the form
+		    			$('#FreeTextMulti_Form').hide();	
+		    			
+		    			//reset the variable that counts the subcomponent
+		    			subcomponent_count = 0;
+		    			resetCommonFormEdit();			
+			
+		    		}
+		    	$('#edit_node').hide();
+		    });
+
+		    $('#FreeTextMulti_addSubcomponent').on('click', function(e) {
+		    	console.log('question_number is ' + question_number);
+		    	//Add new subcomponent to a new FreeTextMulti
+		    	if (ID_of_edited_question == '')
+		    		{
+						var quesID = "Q" + question_number;	
+						console.log('Current questionID of this FreeTextMulti is ' + quesID);
+						//Add a new div
+						$('<div id="' + quesID + '_subcomponent_div' + subcomponent_count + '" class = "subcomponent_FreeTextMulti hover_action subcomponent" </div>').appendTo("#commonDiv");
+		    		}
+		    	else
+		    	{
+		    		var quesID = ID_of_edited_question;	
+					//Add a new div
+		    		$('<div id="' + quesID + '_subcomponent_div' + subcomponent_count + '" class = "subcomponent_FreeTextMulti hover_action subcomponent" </div>').appendTo("#commonDivEdit");		    		
+		    	}	    		
+		    		
+		    		//Add text "Sub-Component" to the newly-created div
+		    		$('<p id ="' + quesID + '_subcomponent_text_' + subcomponent_count + '" class = "subcomponent_FreeTextMulti">').text('Sub-pregunta').appendTo("#" + quesID + '_subcomponent_div' + subcomponent_count);
+		    		
+		    		//Add textfield to the newly-created div
+		    		$('<input type="text" class = "subcomponent_FreeTextMulti" id="' + quesID + '_subcomponent_' + subcomponent_count + '"> </input>' ).appendTo("#" + quesID + '_subcomponent_div' + subcomponent_count);
+		    		
+		    		//Add REMOVE button to the newly-created div
+		    		$('<button id="Delete_subcomponent_' + subcomponent_count + '" type="button" class="btn btn-danger" style="display: none;"> <span class="glyphicon glyphicon-remove-sign"></span> Eliminar </button>')
+		    		.click(function(){
+		    			
+		    			var thisButton_ID = $(this).attr('id');
+		    			console.log(thisButton_ID);
+		    			var subcomponent_index = thisButton_ID.substring(thisButton_ID.lastIndexOf('_')+1, thisButton_ID.length );
+		    			console.log(subcomponent_index);
+		    			$('#' + quesID + '_subcomponent_div' + subcomponent_index).remove();
+		    			//subcomponent_count--;
+		    						              
+		                })
+		    		.appendTo("#" + quesID + '_subcomponent_div' + subcomponent_count);
+		    		
+		    		subcomponent_count++;	
+		    		console.log(subcomponent_count);
+		    		console.log(quesID);				
+		    });
+		    
+		  //--------------------------------------MultipleChoiceSingle-----------------------------------
+		    $('#MultipleChoiceSingle').on('click', function(e) {
+		    	console.log('question_number is ' + question_number);
+		    	$('.question').hide();
+		    	$('.quesTrans').hide();
+		    	$('#MultipleChoiceSingle_Form').show();
+		    	$("#display_hide").hide();	
+		    });
+
+		    $('#MultipleChoiceSingle_Cancel').on('click', function(e) {
+		    	
+		    	//reset text fields
+		    	$('.MultipleChoiceSingle_input').val('');
+		    	//hide the form
+		    	$('#MultipleChoiceSingle_Form').hide();	
+		    	
+		    	resetCommonFormEdit();
+				resetCommonForm();
+				
+		    	$(".subcomponent_MultipleChoiceSingle").remove()  ;
+		    	
+		    	ID_of_edited_question = '';
+
+		    });
+
+		    $('#MultipleChoiceSingle_addSubcomponent').on('click', function(e) {
+		    	console.log('question_number is ' + question_number);
+		    	if (ID_of_edited_question == '')
+		    		{
+		    			var quesID = "Q" + question_number;	
+		    			console.log('Current questionID of this MultipleChoiceSingle is ' + quesID);
+						//Add a new div
+						$('<div id="' + quesID + '_subcomponent_div' + subcomponent_count + '" class = "subcomponent_MultipleChoiceSingle hover_action subcomponent" </div>').appendTo("#commonDiv");
+		    		}
+		    	else 
+		    		{
+		    			var quesID = ID_of_edited_question;
+						//Add a new div
+						$('<div id="' + quesID + '_subcomponent_div' + subcomponent_count + '" class = "subcomponent_MultipleChoiceSingle hover_action subcomponent" </div>').appendTo("#commonDivEdit");
+		    		}	    	
+		    	
+		    	//Add text "Sub-Component" to the newly-created div
+		    	$('<p id ="' + quesID + '_subcomponent_text_' + subcomponent_count + '" class = "subcomponent_MultipleChoiceSingle">').text('Opción').appendTo("#" + quesID + '_subcomponent_div' + subcomponent_count);
+		    	
+		    	//Add textfield to the newly-created div
+		    	$('<input type="text" class = "subcomponent_MultipleChoiceSingle" id="' + quesID + '_subcomponent_' + subcomponent_count + '"> </input>' ).appendTo("#" + quesID + '_subcomponent_div' + subcomponent_count);
+		    	
+		    	//Add REMOVE button to the newly-created div
+		    	$('<button id="Delete_subcomponent_' + subcomponent_count + '" type="button" class="btn btn-danger" style="display: none;"> <span class="glyphicon glyphicon-remove-sign"></span> Eliminar </button>')
+		    	.click(function(){
+		    		
+		    		var thisButton_ID = $(this).attr('id');
+		    		console.log(thisButton_ID);
+		    		var subcomponent_index = thisButton_ID.substring(thisButton_ID.lastIndexOf('_')+1, thisButton_ID.length );
+		    		console.log(subcomponent_index);
+		    		$('#' + quesID + '_subcomponent_div' + subcomponent_index).remove();
+		    		//subcomponent_count--;
+		    					              
+		            })
+		    	.appendTo("#" + quesID + '_subcomponent_div' + subcomponent_count);
+		    	
+		    	subcomponent_count++;	
+		    	console.log(subcomponent_count);
+		    	console.log(quesID);		
+		    });
+
+		    $('#MultipleChoiceSingle_Save').on('click', function(e) {
+		    	console.log('question_number is ' + question_number);
+		    	if (ID_of_edited_question == '')
+		    		{
+		    				var subcomponent_array = [];
+		    				var quesID = "Q" + question_number;
+		    				question_number++;
+		    				var quesType = MultipleChoiceSingle_const;
+		    				var quesLabel = [$('#common_QuesText').val(),(selectedFile == '') ? '':'http://www.citizense.uji.es/Pic/' + selectedFile ,''/*blank value for audio URL*/];
+		    				
+		    				for(var i=0;i<subcomponent_count;i++)
+		    				  {
+		    					  var ID = quesID + '_subcomponent_' + i;
+		    					  console.log(ID);
+		    					  console.log(   $('#' + ID).val()      );
+		    					  if (  $('#' + ID).length  )
+		    						  {
+		    						  		if ($('#' + ID).val() != '') subcomponent_array.push(  $('#' + ID).val()  );
+		    						  }					  
+		    				  }	
+		    				
+		    				//Add the new MultipleChoiceSingle to the Question_Array of the Campaign
+		    				var temp = new MultipleChoiceSingle(quesID, quesType, quesLabel, subcomponent_array);
+		    				Question_Array.push(temp);
+		    				
+		    				addNode(quesID);
+			    			addDefaultTransition(quesID);
+		    				
+		    				//reset text fields
+		    				$('.MultipleChoiceSingle_input').val('');
+		    				$(".subcomponent_MultipleChoiceSingle").remove()  ;
+		    				
+		    				//hide the form
+		    				$('#MultipleChoiceSingle_Form').hide();	
+		    				
+		    				//reset the variable that counts the subcomponent
+		    				subcomponent_count = 0;	
+		    				$("#display_hide").show();	
+		    				nodeSequence.push(quesID);
+		    				console.log('The nodeSequence is ' + JSON.stringify(nodeSequence));
+							
+							resetCommonForm();
+							
+							addTransition(nodeSequence);
+							checkFirstQuestion(nodeSequence, quesID);													
+		    		}
+		    	else
+		    		{
+		    				for (var i=0;i<Question_Array.length;i++)
+		    				{
+		    					if (Question_Array[i].getID()  == ID_of_edited_question)
+		    						{
+		    							console.log("Question found, data is " + Question_Array[i].getID() + ' ' + Question_Array[i].getLabel());
+		    							Question_Array.splice(i,1);
+		    						}
+		    				}
+		    				
+		    				var subcomponent_array = [];
+		    				var quesID = ID_of_edited_question;
+		    				var quesType = MultipleChoiceSingle_const;
+		    				var quesLabel = [$('#commonEdit_QuesText').val(),(selectedFile == '') ? $('#commonEdit_QuesPicURL').val():'http://www.citizense.uji.es/Pic/' + selectedFile,''/*blank value for audio URL*/];
+		    				
+		    				for(var i=0;i<subcomponent_count;i++)
+		    				  {
+		    				  	var ID = quesID + '_subcomponent_' + i;
+		    				  	console.log(ID);
+		    				  	console.log(   $('#' + ID).val()      );
+		    				  	if (  $('#' + ID).length  )
+		    					  {
+		    					  		if ($('#' + ID).val() != '') subcomponent_array.push(  $('#' + ID).val()  );
+		    					  }
+		    				  }	
+		    				
+		    				//Add the new MultipleChoiceSingle to the Question_Array of the Campaign
+		    				var temp = new MultipleChoiceSingle(quesID, quesType, quesLabel, subcomponent_array);
+		    				Question_Array.push(temp);
+		    				
+		    				ID_of_edited_question = '';
+		    				
+		    				//reset text fields
+		    				$('.MultipleChoiceSingle_input').val('');
+		    				$(".subcomponent_MultipleChoiceSingle").remove()  ;
+		    				
+		    				//hide the form
+		    				$('#MultipleChoiceSingle_Form').hide();					
+		    				
+		    				//reset the variable that counts the subcomponent
+		    				subcomponent_count = 0;
+		    				resetCommonFormEdit();					    			
+		    		}	    	
+		    	
+		    });
+		    
+		  //-------------------------------MultipleChoiceMulti----------------------------------------
+		    $('#MultipleChoiceMulti').on('click', function(e) {	
+		    	console.log('question_number is ' + question_number);
+		    	$('.question').hide();
+		    	$('.quesTrans').hide();
+		    	$('#MultipleChoiceMulti_Form').show();	
+		    	$("#display_hide").hide();
+		    });
+
+		    $('#MultipleChoiceMulti_Cancel').on('click', function(e) {
+		    	
+		    	//reset text fields
+		    	$('.MultipleChoiceMulti_input').val('');
+		    	//hide the form
+		    	$('#MultipleChoiceMulti_Form').hide();	
+		    	
+		    	resetCommonFormEdit();
+				resetCommonForm();
+		    	$('.subcomponent_MultipleChoiceMulti').remove();
+		    	
+		    	ID_of_edited_question = '';
+
+		    });
+
+		    $('#MultipleChoiceMulti_addSubcomponent').on('click', function(e) {
+		    	console.log('question_number is ' + question_number);
+		    	if (ID_of_edited_question == '')
+		    		{
+		    			var quesID = "Q" + question_number;	
+		    			console.log('Current questionID of this MultipleChoiceMulti is ' + quesID);
+						//Add a new div
+						$('<div id="' + quesID + '_subcomponent_div' + subcomponent_count + '" class = "subcomponent_MultipleChoiceMulti hover_action subcomponent" </div>').appendTo("#commonDiv");
+		    		}
+		    	else
+		    		{
+		    			var quesID = ID_of_edited_question;
+						//Add a new div
+						$('<div id="' + quesID + '_subcomponent_div' + subcomponent_count + '" class = "subcomponent_MultipleChoiceMulti hover_action subcomponent" </div>').appendTo("#commonDivEdit");
+		    		}	    	
+		    	
+		    	//Add text "Sub-Component" to the newly-created div
+		    	$('<p id ="' + quesID + '_subcomponent_text_' + subcomponent_count + '" class = "subcomponent_MultipleChoiceMulti">').text('Opción').appendTo("#" + quesID + '_subcomponent_div' + subcomponent_count);
+		    	
+		    	//Add textfield to the newly-created div
+		    	$('<input type="text" class = "subcomponent_MultipleChoiceMulti" id="' + quesID + '_subcomponent_' + subcomponent_count + '"> </input>' ).appendTo("#" + quesID + '_subcomponent_div' + subcomponent_count);
+		    	
+		    	//Add REMOVE button to the newly-created div
+		    	$('<button id="Delete_subcomponent_' + subcomponent_count + '" type="button" class="btn btn-danger" style="display: none;"> <span class="glyphicon glyphicon-remove-sign"></span> Eliminar </button>')
+		    	.click(function(){
+		    		
+		    		var thisButton_ID = $(this).attr('id');
+		    		console.log(thisButton_ID);
+		    		var subcomponent_index = thisButton_ID.substring(thisButton_ID.lastIndexOf('_')+1, thisButton_ID.length );
+		    		console.log(subcomponent_index);
+		    		$('#' + quesID + '_subcomponent_div' + subcomponent_index).remove();
+		    		//subcomponent_count--;
+		    					              
+		            })
+		    	.appendTo("#" + quesID + '_subcomponent_div' + subcomponent_count);
+		    	
+		    	subcomponent_count++;	
+		    	console.log(subcomponent_count);
+		    	console.log(quesID);		
+		    });
+
+		    $('#MultipleChoiceMulti_Save').on('click', function(e) {
+		    	console.log('question_number is ' + question_number);
+		    	if (ID_of_edited_question == '')
+		    	{
+		    			var subcomponent_array = [];
+		    			var quesID = "Q" + question_number;
+		    			question_number++;
+		    			var quesType = MultipleChoiceMulti_const;
+		    			var quesLabel = [$('#common_QuesText').val(),(selectedFile == '') ? '':'http://www.citizense.uji.es/Pic/' + selectedFile ,''/*blank value for audio URL*/];
+		    			
+		    			for(var i=0;i<subcomponent_count;i++)
+		    			  {
+		    				  var ID = quesID + '_subcomponent_' + i;
+		    				  console.log(ID);
+		    				  console.log(   $('#' + ID).val()      );
+		    				  if (  $('#' + ID).length  )
+		    					  {
+		    					  		if ($('#' + ID).val() != '') subcomponent_array.push(  $('#' + ID).val()  );
+		    					  }					  
+		    			  }	
+		    			
+		    			//Add the new MultipleChoiceMulti to the Question_Array of the Campaign
+		    			var temp = new MultipleChoiceMulti(quesID, quesType, quesLabel, subcomponent_array);
+		    			Question_Array.push(temp);
+		    			
+		    			addNode(quesID);
+		    			addDefaultTransition(quesID);
+		    			
+		    			//reset text fields
+		    			$('.MultipleChoiceMulti_input').val('');
+		    			$(".subcomponent_MultipleChoiceMulti").remove()  ;
+		    			
+		    			//hide the form
+		    			$('#MultipleChoiceMulti_Form').hide();	
+		    			
+		    			//reset the variable that counts the subcomponent
+		    			subcomponent_count = 0;	
+		    			$("#display_hide").show();		
+		    			nodeSequence.push(quesID);
+		    			console.log('The nodeSequence is ' + JSON.stringify(nodeSequence));
+						
+						resetCommonForm();
+						
+						addTransition(nodeSequence);
+						checkFirstQuestion(nodeSequence, quesID);												
+		    	}
+		    	else
+		    		{
+		    				for (var i=0;i<Question_Array.length;i++)
+		    				{
+		    					if (Question_Array[i].getID()  == ID_of_edited_question)
+		    						{
+		    							console.log("Question found, data is " + Question_Array[i].getID() + ' ' + Question_Array[i].getLabel());
+		    							Question_Array.splice(i,1);
+		    						}
+		    				}
+		    				
+		    				var subcomponent_array = [];
+		    				var quesID = ID_of_edited_question;
+		    				var quesType = MultipleChoiceMulti_const;
+		    				var quesLabel = [$('#commonEdit_QuesText').val(),(selectedFile == '') ? $('#commonEdit_QuesPicURL').val():'http://www.citizense.uji.es/Pic/' + selectedFile,''/*blank value for audio URL*/];
+		    				
+		    				for(var i=0;i<subcomponent_count;i++)
+		    				  {
+		    				  	var ID = quesID + '_subcomponent_' + i;
+		    				  	console.log(ID);
+		    				  	console.log(   $('#' + ID).val()      );
+		    				  	if (  $('#' + ID).length  )
+		    					  {
+		    					  		if ($('#' + ID).val() != '') subcomponent_array.push(  $('#' + ID).val()  );
+		    					  }
+		    				  }	
+		    				
+		    				//Add the new MultipleChoiceMulti to the Question_Array of the Campaign
+		    				var temp = new MultipleChoiceMulti(quesID, quesType, quesLabel, subcomponent_array);
+		    				Question_Array.push(temp);
+		    				
+		    				ID_of_edited_question = '';
+		    				
+		    				//reset text fields
+		    				$('.MultipleChoiceMulti_input').val('');
+		    				$(".subcomponent_MultipleChoiceMulti").remove()  ;
+		    				
+		    				//hide the form
+		    				$('#MultipleChoiceMulti_Form').hide();	
+		    				
+		    				//reset the variable that counts the subcomponent
+		    				subcomponent_count = 0;
+		    				resetCommonFormEdit();			
+
+		    			
+		    		}
+		    	
+		    });
+		    
+		  //---------------------------------AudioSensor-----------------------------------
+		    $('#AudioSensor').on('click', function(e) {	
+		    	console.log('question_number is ' + question_number);
+		    	$('.question').hide();
+		    	$('.quesTrans').hide();
+		    	$('#AudioSensor_Form').show();
+		    	$("#display_hide").hide();
+		    });
+
+		    $('#AudioSensor_Cancel').on('click', function(e) {
+		    	
+		    	//reset text fields
+		    	$('.AudioSensor_input').val('');
+		    	//hide the form
+		    	$('#AudioSensor_Form').hide();
+		    	resetCommonFormEdit();
+				resetCommonForm();
+		    	$('#edit_node').hide();
+		    	
+		    	ID_of_edited_question = '';		
+		    });
+
+		    $('#AudioSensor_Save').on('click', function(e) {
+		    	console.log('question_number is ' + question_number);
+		    	//A new AudioSensor is created
+		    	if (ID_of_edited_question == '')
+		    		{
+		    			var quesID = "Q" + question_number;
+		    			question_number++;
+		    			var quesType = AudioSensor_const;
+		    			var quesLabel = [$('#common_QuesText').val(),(selectedFile == '') ? '':'http://www.citizense.uji.es/Pic/' + selectedFile ];
+		    			var temp = new AudioSensor(quesID, quesType, quesLabel);
+		    			Question_Array.push(temp);		
+		    		
+		    			addNode(quesID);
+		    			addDefaultTransition(quesID);
+		      		
+		     	 		//reset text fields
+		    			$('.AudioSensor_input').val('');		
+		    			//hide the form
+		    			$('#AudioSensor_Form').hide();
+		    			$("#display_hide").show();	
+		    			nodeSequence.push(quesID);
+		    			console.log('The nodeSequence is ' + JSON.stringify(nodeSequence));
+						
+						resetCommonForm();
+						
+						addTransition(nodeSequence);		
+						checkFirstQuestion(nodeSequence, quesID);						
+		    		}
+		    	
+		    	//A AudioSensor is being edited, 
+		    	else 
+		    		{
+		    			for (var i=0;i<Question_Array.length;i++)
+		    				{
+		    					if (Question_Array[i].getID()  == ID_of_edited_question)
+		    						{
+		    							console.log("Question found, data is " + Question_Array[i].getID() + ' ' + Question_Array[i].getLabel());
+		    							Question_Array.splice(i,1);
+		    						}
+		    				}
+		    			var quesID = ID_of_edited_question;
+		    			var quesType = AudioSensor_const;
+		    			var quesLabel = [$('#AudioSensor_Form_QuesText').val(),$('#AudioSensor_Form_QuesImage').val()];
+		    			var temp = new AudioSensor(quesID, quesType, quesLabel);
+		    			Question_Array.push(temp);
+		    			
+		    			ID_of_edited_question = '';
+		    			
+		    			//reset text fields
+		    			$('.AudioSensor_input').val('');		
+		    			//hide the form
+		    			$('#AudioSensor_Form').hide();
+		    			resetCommonFormEdit();					    			
+
+		    		}
+		    	$('#edit_node').hide();
+		    });
+		    
+		  //---------------------------------TextDisplay-----------------------------------
+		    $('#TextDisplay').on('click', function(e) {
+		    	console.log('question_number is ' + question_number);
+		    	$('.question').hide();
+		    	$('.quesTrans').hide();
+		    	$('#TextDisplay_Form').show();
+		    	$("#display_hide").hide();
+		    });
+
+		    $('#TextDisplay_Cancel').on('click', function(e) {
+		    	
+		    	//reset text fields
+		    	$('.TextDisplay_input').val('');
+		    	//hide the form
+		    	$('#TextDisplay_Form').hide();
+		    	resetCommonFormEdit();
+				resetCommonForm();
+		    	$('#edit_node').hide();
+		    	
+		    	ID_of_edited_question = '';
+		    	
+		    });
+
+		    $('#TextDisplay_Save').on('click', function(e) {
+		    	console.log('question_number is ' + question_number);
+		    	//A new TextDisplay is created
+		    	if (ID_of_edited_question == '')
+		    		{
+		    			var quesID = "T" + question_number;
+		    			question_number++;
+		    			var quesType = TextDisplay_const;
+		    			var quesLabel = [$('#common_QuesText').val(),(selectedFile == '') ? '':'http://www.citizense.uji.es/Pic/' + selectedFile ,''/*blank value for audio URL*/];
+		    			var temp = new TextDisplay(quesID, quesType, quesLabel);
+		    			Question_Array.push(temp);		
+		    		
+		    			addNode(quesID);
+		    			addDefaultTransition(quesID);
+		      		
+		     	 		//reset text fields
+		    			$('.TextDisplay_input').val('');		
+		    			//hide the form
+		    			$('#TextDisplay_Form').hide();
+		    			$("#display_hide").show();	
+		    			nodeSequence.push(quesID);
+		    			console.log('The nodeSequence is ' + JSON.stringify(nodeSequence));
+						
+						resetCommonForm();
+						
+						addTransition(nodeSequence);	
+						checkFirstQuestion(nodeSequence, quesID);						
+		    		}
+		    	
+		    	//A TextDisplay is being edited, 
+		    	else 
+		    		{
+		    			for (var i=0;i<Question_Array.length;i++)
+		    				{
+		    					if (Question_Array[i].getID()  == ID_of_edited_question)
+		    						{
+		    							console.log("Question found, data is " + Question_Array[i].getID() + ' ' + Question_Array[i].getLabel());
+		    							Question_Array.splice(i,1);
+		    						}
+		    				}
+		    			var quesID = ID_of_edited_question;
+		    			var quesType = TextDisplay_const;
+		    			var quesLabel = [$('#commonEdit_QuesText').val(),(selectedFile == '') ? $('#commonEdit_QuesPicURL').val():'http://www.citizense.uji.es/Pic/' + selectedFile,''/*blank value for audio URL*/];
+		    			var temp = new TextDisplay(quesID, quesType, quesLabel);
+		    			Question_Array.push(temp);
+		    			
+		    			ID_of_edited_question = '';
+		    			
+		    			//reset text fields
+		    			$('.TextDisplay_input').val('');		
+		    			//hide the form
+		    			$('#TextDisplay_Form').hide();
+		    			resetCommonFormEdit();					    			
+
+		    		}
+		    	
+		    	$('#edit_node').hide();
+		    });
+		    
+		  //---------------------------------FreeNumericSingle-----------------------------------
+		    $('#FreeNumericSingle').on('click', function(e) {
+		    	console.log('question_number is ' + question_number);
+		    	$('.question').hide();
+		    	$('.quesTrans').hide();
+		    	$('#FreeNumericSingle_Form').show();
+		    	$("#display_hide").hide();
+		    });
+
+		    $('#FreeNumericSingle_Cancel').on('click', function(e) {
+		    	
+		    	//reset text fields
+		    	$('.FreeNumericSingle_input').val('');
+		    	//hide the form
+		    	$('#FreeNumericSingle_Form').hide();
+		    	resetCommonFormEdit();
+				resetCommonForm();	    	
+		    	
+		    	ID_of_edited_question = '';
+		    	
+		    });
+
+		    $('#FreeNumericSingle_Save').on('click', function(e) {
+		    	console.log('question_number is ' + question_number);
+		    	//A new FreeNumericSingle is created
+		    	if (ID_of_edited_question == '')
+		    		{
+		    			var quesID = "Q" + question_number;
+		    			question_number++;
+		    			var quesType = FreeNumericSingle_const;
+		    			var quesLabel = [$('#common_QuesText').val(),(selectedFile == '') ? '':'http://www.citizense.uji.es/Pic/' + selectedFile ,''/*blank value for audio URL*/];
+		    			var temp = new FreeNumericSingle(quesID, quesType, quesLabel);
+		    			Question_Array.push(temp);		
+		    		
+		    			addNode(quesID);
+		    			addDefaultTransition(quesID);
+		      		
+		     	 		//reset text fields
+		    			$('.FreeNumericSingle_input').val('');		
+		    			//hide the form
+		    			$('#FreeNumericSingle_Form').hide();
+		    			$("#display_hide").show();
+		    			nodeSequence.push(quesID);
+		    			console.log('The nodeSequence is ' + JSON.stringify(nodeSequence));
+						
+						resetCommonForm();
+						
+						addTransition(nodeSequence);	
+						checkFirstQuestion(nodeSequence, quesID);						
+		    		}
+		    	
+		    	//A FreeNumericSingle is being edited, 
+		    	else 
+		    		{
+		    			for (var i=0;i<Question_Array.length;i++)
+		    				{
+		    					if (Question_Array[i].getID()  == ID_of_edited_question)
+		    						{
+		    							console.log("Question found, data is " + Question_Array[i].getID() + ' ' + Question_Array[i].getLabel());
+		    							Question_Array.splice(i,1);
+		    						}
+		    				}
+		    			var quesID = ID_of_edited_question;
+		    			var quesType = FreeNumericSingle_const;
+		    			var quesLabel = [$('#commonEdit_QuesText').val(),(selectedFile == '') ? $('#commonEdit_QuesPicURL').val():'http://www.citizense.uji.es/Pic/' + selectedFile,''/*blank value for audio URL*/];
+		    			var temp = new FreeNumericSingle(quesID, quesType, quesLabel);
+		    			Question_Array.push(temp);
+		    			
+		    			ID_of_edited_question = '';
+		    			
+		    			//reset text fields
+		    			$('.FreeNumericSingle_input').val('');		
+		    			//hide the form
+		    			$('#FreeNumericSingle_Form').hide();
+		    			resetCommonFormEdit();					    			
+		    		}		    	
+		    	
+		    });
+		    
+		  //---------------------------------ContRange-----------------------------------
+		    $('#ContRange').on('click', function(e) {
+		    	console.log('question_number is ' + question_number);
+		    	$('.question').hide();
+		    	$('.quesTrans').hide();
+		    	$('#ContRange_Form').show();
+		    	$("#display_hide").hide();
+		    });
+
+		    $('#ContRange_Cancel').on('click', function(e) {
+		    	
+		    	//reset text fields
+		    	$('.ContRange_input').val('');
+		    	//hide the form
+		    	$('#ContRange_Form').hide();
+		    	resetCommonFormEdit();
+				resetCommonForm();		    	
+		    	
+		    	ID_of_edited_question = '';
+		    	
+		    });
+
+		    $('#ContRange_Save').on('click', function(e) {
+		    	console.log('question_number is ' + question_number);
+		    	//A new ContRange is created
+		    	if (ID_of_edited_question == '')
+		    		{
+						var min = $('#ContRange_min').val();
+						var max = $('#ContRange_max').val();
+						if ( (isNaN(min)) || (isNaN(max)) || (min>=max))
+						{
+							alert('Por favor, verifique el mínimo y/o máximo valor. Asegúrate que es un número válido y que el valor mínimo es menor que el máximo.');
+						}
+						else
+						{
+							var quesID = "Q" + question_number;
+							question_number++;
+							var quesType = ContRange_const;
+							var quesLabel = [$('#common_QuesText').val(),(selectedFile == '') ? '':'http://www.citizense.uji.es/Pic/' + selectedFile ,''/*blank value for audio URL*/];
+							
+							var subcomponent_array = [];
+							subcomponent_array.push( $('#ContRange_min').val() ); //Read min value
+							subcomponent_array.push( $('#ContRange_max').val() ); //Read max value
+							var temp = new ContRange(quesID, quesType, quesLabel, subcomponent_array);
+							Question_Array.push(temp);		
+						
+							addNode(quesID);
+							addDefaultTransition(quesID);
+						
+							//reset text fields
+							$('.ContRange_input').val('');		
+							//hide the form
+							$('#ContRange_Form').hide();
+							$("#display_hide").show();	
+							nodeSequence.push(quesID);
+							console.log('The nodeSequence is ' + JSON.stringify(nodeSequence));
+							
+							resetCommonForm();
+							
+							addTransition(nodeSequence);	
+							checkFirstQuestion(nodeSequence, quesID);
+						}
+						
+		    									
+		    		}
+		    	
+		    	//A ContRange is being edited, 
+		    	else 
+		    		{
+						var min = $('#ContRange_min').val();
+						var max = $('#ContRange_max').val();
+						if ( (isNaN(min)) || (isNaN(max)) || (min>=max))
+						{
+							alert('Please check the minimum and/or maximum value, make sure it is a valid number');
+						}
+						else
+						{
+							for (var i=0;i<Question_Array.length;i++)
+		    				{
+		    					if (Question_Array[i].getID()  == ID_of_edited_question)
+		    						{
+		    							console.log("Question found, data is " + Question_Array[i].getID() + ' ' + Question_Array[i].getLabel());
+		    							Question_Array.splice(i,1);
+		    						}
+		    				}
+							var quesID = ID_of_edited_question;
+							var quesType = ContRange_const;
+							var quesLabel = [$('#commonEdit_QuesText').val(),(selectedFile == '') ? $('#commonEdit_QuesPicURL').val():'http://www.citizense.uji.es/Pic/' + selectedFile,''/*blank value for audio URL*/];
+							
+							var subcomponent_array = [];
+							subcomponent_array.push( $('#ContRange_min').val() ); //Read min value
+							subcomponent_array.push( $('#ContRange_max').val() ); //Read max value
+							
+							var temp = new ContRange(quesID, quesType, quesLabel, subcomponent_array);
+							Question_Array.push(temp);
+							
+							ID_of_edited_question = '';
+							
+							//reset text fields
+							$('.ContRange_input').val('');		
+							//hide the form
+							$('#ContRange_Form').hide();
+							resetCommonFormEdit();	
+						}
+		    							    			
+		    		}		    	
+		    	
+		    });
+			
+			//---------------------------------UploadPhoto-----------------------------------
+		    $('#UploadPhoto').on('click', function(e) {
+		    	console.log('question_number is ' + question_number);
+		    	$('.question').hide();
+		    	$('.quesTrans').hide();
+		    	$('#FreeNumericSingle_Form').show();
+		    	$("#display_hide").hide();
+		    });
+
+		    $('#UploadPhoto_Cancel').on('click', function(e) {
+		    	
+		    	//reset text fields
+		    	$('.UploadPhoto_input').val('');
+		    	//hide the form
+		    	$('#UploadPhoto_Form').hide();
+		    	resetCommonFormEdit();
+				resetCommonForm();	    	
+		    	
+		    	ID_of_edited_question = '';		  
+		    	
+		    });
+
+		    $('#UploadPhoto_Save').on('click', function(e) {
+		    	console.log('question_number is ' + question_number);
+		    	//A new UploadPhoto is created
+		    	if (ID_of_edited_question == '')
+		    		{
+		    			var quesID = "Q" + question_number;
+		    			question_number++;
+		    			var quesType = UploadPhoto_const;
+		    			var quesLabel = [$('#common_QuesText').val(),(selectedFile == '') ? '':'http://www.citizense.uji.es/Pic/' + selectedFile ,''/*blank value for audio URL*/];
+		    			var temp = new UploadPhoto(quesID, quesType, quesLabel);
+		    			Question_Array.push(temp);		
+		    		
+		    			addNode(quesID);
+		    			addDefaultTransition(quesID);
+		      		
+		     	 		//reset text fields
+		    			$('.UploadPhoto_input').val('');		
+		    			//hide the form
+		    			$('#UploadPhoto_Form').hide();
+		    			$("#display_hide").show();
+		    			nodeSequence.push(quesID);
+		    			console.log('The nodeSequence is ' + JSON.stringify(nodeSequence));
+						
+						resetCommonForm();
+						
+						addTransition(nodeSequence);	
+						checkFirstQuestion(nodeSequence, quesID);						
+		    		}
+		    	
+		    	//A UploadPhoto is being edited, 
+		    	else 
+		    		{
+		    			for (var i=0;i<Question_Array.length;i++)
+		    				{
+		    					if (Question_Array[i].getID()  == ID_of_edited_question)
+		    						{
+		    							console.log("Question found, data is " + Question_Array[i].getID() + ' ' + Question_Array[i].getLabel());
+		    							Question_Array.splice(i,1);
+		    						}
+		    				}
+		    			var quesID = ID_of_edited_question;
+		    			var quesType = UploadPhoto_const;
+		    			var quesLabel = [$('#commonEdit_QuesText').val(),(selectedFile == '') ? $('#commonEdit_QuesPicURL').val():'http://www.citizense.uji.es/Pic/' + selectedFile,''/*blank value for audio URL*/];
+		    			var temp = new UploadPhoto(quesID, quesType, quesLabel);
+		    			Question_Array.push(temp);
+		    			
+		    			ID_of_edited_question = '';
+		    			
+		    			//reset text fields
+		    			$('.UploadPhoto_input').val('');		
+		    			//hide the form
+		    			$('#UploadPhoto_Form').hide();
+		    			resetCommonFormEdit();					    			
+		    		}		    	
+		    	
+		    });
+		    
+		  //----------------------------------Question Transition - DEFAULT
+		    $('#default_tran').on('click', function(e) {
+		    	
+		    	$('.question').hide();
+		    	$('.quesTrans').hide();
+				
+				$('#default_transition_Cancel').click();				
+				
+				var originList = $('<select id="originSelect" />');
+				$('<option />', {value: "value", text: ' '} ).appendTo(originList);
+				
+				for(var i = 0;i < nodeSequence.length;i++) 
+				{
+					$('<option />', {value: nodeSequence[i], text: nodeSequence[i]} ).appendTo(originList);
+				}
+				$('<p>Seleccione la <b>pregunta de origen</b> de esta lista.</p>').appendTo('#default_transition_form');
+				originList.appendTo('#default_transition_form');
+				
+				$('<br><br>').appendTo('#default_transition_form');
+				//-------------------------------
+				
+				var destinationList = $('<select id="destinationSelect" />');
+				$('<option />', {value: "value", text: ' '} ).appendTo(destinationList);
+
+				for(var i = 0;i < nodeSequence.length;i++) 
+				{
+					$('<option />', {value: nodeSequence[i], text: nodeSequence[i]} ).appendTo(destinationList);
+				}
+				$('<p>Seleccione la <b>pregunta de destino</b> de esta lista.</p>').appendTo('#default_transition_form');
+				destinationList.appendTo('#default_transition_form');
+				
+				
+
+		    	$('#default_transition').show();
+		    	$("#display_hide").hide();
+		    });
+
+		    $('#default_transition_OK').on('click', function(e) {
+		    	//var origin      = $('#default_tran_origin').val().toUpperCase(); 
+		    	//var destination = $('#default_tran_destination').val().toUpperCase(); 
+				var origin         = $('#originSelect :selected').val();
+				var destination    = $('#destinationSelect :selected').val();
+		    	
+		    	console.log('add a new edge');
+		    	
+		    	cy.add({
+		      	    group: "edges",
+		      	    data: { id: origin + '-' + destination, source: origin, target: destination }
+					//data: { id: $('#originSelect :selected').val() + '-' + $('#destinationSelect :selected').val(), source: $('#originSelect :selected').val(), target: $('#destinationSelect :selected').val() }
+		      	});
+		    	
+		    	var tempBranch = new Branch("true",destination);
+		    	var condition = [];
+		    	condition.push(tempBranch);
+		    	
+		    	var i;
+		    	for (i=0;i<Campaign_Workflow.length;i++)
+		    		{
+		    		 	if (Campaign_Workflow[i].getQuesID() == origin) 
+		    		 		{
+		    		 			console.log(origin + ' is duplicated');
+		    		 			Campaign_Workflow[i].getCondition().push(tempBranch);			 			
+		    		 		}
+		    		}		
+		    	//var temp_WorkflowElement = new Workflow_Element(origin,condition);
+		    	//Campaign_Workflow.push(temp_WorkflowElement);
+		    	
+		    	//reset text fields
+		    	$('.default_tran').val('');
+		    	//hide the div
+		    	$('#default_transition').hide();
+		    	
+		    	$("#display_hide").show();
+				
+				$('#default_transition_form').empty();
+		    	 
+		    });
+
+		    $('#default_transition_Cancel').on('click', function(e) {		
+		    	
+		    	//reset text fields
+		    	$('.default_tran').val('');
+		    	//hide the div
+		    	$('#default_transition').hide();	
+		    	
+		    	$("#display_hide").show();	
+
+				$('#default_transition_form').empty();
+		    });
+		    
+		  //----------------------------------Question Transition - Conditional
+		    $('#conditional_tran').on('click', function(e) {
+		    	
+		    	$('.question').hide();
+		    	$('.quesTrans').hide();
+
+		    	$('#conditional_transition').show();
+		    	$("#display_hide").hide();
+		    });
+
+		    $('#conditional_transition_Cancel').on('click', function(e) {		
+		    	
+		    	//reset text fields
+		    	$('.conditional_tran').val('');
+		    	//hide the div
+		    	$('#conditional_transition').hide();
+
+				$('input[name="primitive"]').prop('checked', false);
+		    	$('#value_0').css('display', 'none');
+				$('#values_0').css('display', 'none');
+				$('#count_0').css('display', 'none');
+		    	
+		    	$("#display_hide").show();
+		    	 
+		    });
+
+		    $('#conditional_transition_OK').on('click', function(e) {
+		    	var origin      = $('#conditional_tran_origin').val().toUpperCase();
+		    	var destination = $('#conditional_tran_destination').val().toUpperCase();
+		    	//var expression  = $('#conditional_tran_expression').val();
+				
+				var expression;
+				var primitive = $('input[name=primitive]:checked').val();
+				//alert(primitive);
+				
+				if (primitive == 'value')
+					{
+						expression = origin + '.' + primitive + ' ' + $('#stringOperand :selected').val() + ' ' + '\'' + $('#value_parameter_0').val() + '\'';
+					}
+				else if (primitive == 'values')
+					{
+						expression = origin + '.' + primitive + '.indexOf' + '(\'' +  $('#values_parameter_0').val() + '\')' + ' > -1';	    	
+					}
+				else if (primitive == 'count')
+					{
+						expression = origin + '.' + primitive + ' ' + $('#numericOperand :selected').val() + ' ' + $('#count_parameter_0').val();
+					}
+	    
+				alert(expression);
+		    			    		    	
+		    	console.log('add a new edge');
+		    	console.log( $('#combo :selected').text() );
+		    	
+		    	cy.add({
+		      	    group: "edges",
+		      	    data: { id: origin + '-' + destination, source: origin, target: destination }
+		      	});
+		    	
+		    	var tempBranch = new Branch(expression,destination);
+		    	
+		    	var i;
+		    	for (i=0;i<Campaign_Workflow.length;i++)
+		    		{
+		    		 	if (Campaign_Workflow[i].getQuesID() == origin) 
+		    		 		{
+		    		 			console.log(origin + ' is duplicated');
+		    		 			Campaign_Workflow[i].getCondition().push(tempBranch);			 			
+		    		 		}
+		    		}
+		    	
+		    	//reset text fields
+		    	$('.conditional_tran').val('');
+		    	//hide the div
+		    	$('#conditional_transition').hide();
+		    	
+				$('input[name="primitive"]').prop('checked', false);
+		    	$('#value_0').css('display', 'none');
+				$('#values_0').css('display', 'none');
+				$('#count_0').css('display', 'none');
+				
+				$("#display_hide").show();		
+		    });
+		    
+		    $(document).on('mouseenter', '.hover_action', function () {
+		    	
+		    	//var divID = $(this).attr('id');
+		    	//console.log(divID);
+		    	
+		        $(this).find(":button").show(); 
+		        
+		        
+		    }).on('mouseleave', '.hover_action', function () {
+		        $(this).find(":button").hide();
+		        //$( ".hover_action" ).off();
+		    });	
+		    
+		  //---------------------------------------New DELETE button, without typing the ID of the node to be deleted
+		    $('#new_delete').on('click', function(e) {
+		    var itemID = $('#selection').val();
+		    console.log('Item is ' + itemID);
+			
+			if (itemID == StartQues)
+			{
+				console.log('The question being deleted is also start question');
+				StartQues = '';
+			}
+		    	
+		    	//select that item from the graph
+		    	var a = cy.$("#" + itemID);		    	  	
+		    	  	
+		    	  	if (a.isNode()) {  	  		
+		    	  		console.log('This is a node');
+		    	  		var this_node = cy.$('#' + itemID);
+		    	  		var incomers = this_node.incomers();
+		    		console.log(incomers.length);
+		    		for (var i=0;i<incomers.length;i++)
+		    		{
+		    		
+		    		console.log('aaaaaaaaaaaaaaaaaaaaaaaaa');
+		    		for (var i=0;i<incomers.length;i++)
+		    			{
+		    				if (incomers[i].isNode())
+		    					{
+		    						var ID = incomers[i].id();
+		    						for (var j=0;j<Campaign_Workflow.length;j++)
+		    							{
+		    								if (Campaign_Workflow[j].getQuesID() == ID)
+		    									{
+		    										var workflow_element = Campaign_Workflow[j];
+		    										var condition = workflow_element.getCondition();
+		    										for (var k=0;k<condition.length;k++)
+		    											{
+		    												if (condition[k].getNext() == itemID)
+		    													{
+		    													console.log('Found the following branch: '+ condition[k].getExpression() + ', ' + condition[k].getNext()  );
+		    													condition.splice(k,1);
+		    													}
+		    											}
+		    									}
+		    							}
+		    					}
+		    			}			
+		    		}  	  		
+		    	  	}
+		    	  	
+		    	  	if (a.isEdge()) {
+		    	  		console.log('This is an edge');  	  		
+		    	  		
+		    	  		var this_edge = cy.$('#' + itemID);
+		    	 		var source = this_edge.source();
+		    	  		var target = this_edge.target();  	  		
+		      		console.log('This edge ' + this_edge.id() + ' is from ' + source.id() + ' to ' + target.id() );  	
+		      		
+		      		for (var i=0;i<Campaign_Workflow.length;i++)
+		      			{
+		      				if (Campaign_Workflow[i].getQuesID() == source.id())
+		      					{
+		    							var workflow_element = Campaign_Workflow[i];
+		    							var condition = workflow_element.getCondition();
+		      						for (var j=0;j<condition.length;j++)
+		      							{
+		      								if (condition[j].getNext() == target.id())
+		      									{
+		      										console.log('Found the following branch: '+ condition[j].getExpression() + ', ' + condition[j].getNext()  );
+		      										condition.splice(j,1);
+		      									}	  								
+		      							}
+		      					}
+		      			}
+		    	  	}
+		    	  	
+		    	  	//remove question from Question_Array
+		    	  	for (var j=0;j<Question_Array.length;j++)
+		    	{
+		    		if (Question_Array[j].getID() === itemID)
+		    			{
+		    				console.log(itemID + ' found in Question_Array, deleted');
+		    				Question_Array.splice(j,1);	    				
+		    			}	    				
+		    	}	
+		    	  	
+		    	  	//remove entry from the workflow array
+		    	  	for (var j=0;j<Campaign_Workflow.length;j++)
+		    	{
+		    		if (Campaign_Workflow[j].getQuesID() === itemID)
+		    			{
+		    				console.log(itemID + ' found in Worlflow_Array, deleted');
+		    				Campaign_Workflow.splice(j,1);	    				
+		    			}	    				
+		    	} 
+		    	  	
+		    	  	for (var j=0;j<nodeSequence.length;j++)
+		    	  		{
+		    	  			if (nodeSequence[j] === itemID)
+		    	  				{
+		    	  					console.log('Delete item ' + itemID + ' from nodeSequence');
+		    	  					nodeSequence.splice(j,1);
+		    	  				}
+		    	  		}
+		    	  	console.log('The remaining nodeSequence is ' + JSON.stringify(nodeSequence));
+		    	  	
+		    	  	//reset textfield
+		    	  	$('#delete_node_textfield').val('');
+		    	  	
+		    	  	cy.remove( a );
+		    	  	$('.edit_form').hide();
+		    	  	
+		    	  	ID_of_edited_question = '';
+		    	  	
+		    	  //reset text fields
+		    		$('.FreeTextSingle_input').val('');
+		    		$('.FreeTextMulti_input').val('');
+		    		$('.MultipleChoiceSingle_input').val('');
+		    		$('.MultipleChoiceMulti_input').val('');
+		    		$('.AudioSensor_input').val('');
+		    		$('.TextDisplay_input').val('');
+		    		$('.FreeNumericSingle_input').val('');
+		    		$('.ContRange_input').val('');
+		    		
+		    		//remove subcomponent from question form
+		    		$('.subcomponent').remove();
+		    	
+		    });
+		  
+		  //---------------------------------Select the start question
+		    $('#new_selectStart').on('click', function(e) {
+		    	var found = false;
+		    	
+		    	if (StartQues != '')
+		    		{
+		    			var b = cy.$('#' + StartQues);
+		    			b.removeClass('highlight');
+		    		
+		    		}		
+		    			var value = $('#selection').val();
+		    			for (var i = 0;i<Question_Array.length;i++)
+		    				{
+		    					if (Question_Array[i].getID() == value)	
+		    						{
+		    							found = true;
+		    						}
+		    				}		    			
+		    			if (found == true)
+		    				{
+		    					StartQues = value;
+		    					var a = cy.$("#" + StartQues);	
+		    					a.addClass('highlight');
+		    				}
+		    			else 
+		    				{
+		    					alert('Incorrect input for start question');
+		    				}	    			
+		    });
+		  
+		  //-------------------------------------------------FINISH THE CAMPAIGN 
+		    $('#complete').on('click', function(e){
+		    	
+		    	console.log('Size of Question_Array is ' + Question_Array.length);
+		    	console.log( JSON.stringify(Question_Array) );
+		    	
+		    	console.log('Size of Workflow_Array is ' + Campaign_Workflow.length);
+		    	console.log( JSON.stringify(Campaign_Workflow) );    	
+		    	
+		    	if (StartQues == '') alert('Start question is empty');
+		    	
+		    	else
+		    		{		    		
+		    			//alert('userID is ' + userID);
+		    			console.log('Campaign ID is ' + Campaign_ID);
+		    			console.log('UserID is ' + userID);
+		    			var cam = new Campaign(Campaign_ID, Campaign_Description, onetimeValue, expiry, start_date, end_date, geoBoolean, Area_List, Area_List_WebMercator, 
+						StartQues, Question_Array, Campaign_Workflow,  userID, cy.json(), extrinsicBooleanValue, incentiveList, incentiveContact, showResult);
+		    			console.log( JSON.stringify(cam) );
+		    			
+		    			console.log("cy.json() produces " + JSON.stringify(cy.json()));
+		    		
+		    			//console.log(cy.json());		
+		    			
+		    			var now = Date();
+						
+		    			$.post( 	                
+		    	                "insertCampaign.php",
+		    	                { data1: userID,
+		    	                  data2: JSON.stringify(cam),
+		    	                  data3: Campaign_ID,
+								  data4: now},
+								  
+		    	                 
+		    	                function(data) {
+		    	                   
+		    	                   alert(data); 
+		    	                   resetSession();
+		    	                   window.location.href = "dashboard.html";
+		    	                   
+		    	                }
+		    	             ); 
+		    			
+		    			/*
+		    			sessionStorage.CamID_Session                 = null;
+						sessionStorage.CamDescription_Session        = null;
+						sessionStorage.onetimeBoolean_Session        = null;
+						sessionStorage.expiryBoolean_Session         = null;
+						sessionStorage.startDate_Session             = null;
+						sessionStorage.endDate_Session               = null;
+						sessionStorage.AreaOfInterestBoolean_Session = null;
+						sessionStorage.AreaOfInterest_Session        = null;
+						sessionStorage.WebMercator_Session           = null;
+						*/
+		    			
+		    			/*
+		    			$('<a href="" id="link" download="' + Campaign_ID + '.txt"> Download Campaign file </a> ').appendTo('#quesType');
+		    			document.getElementById('link').onclick = function(code) {
+		    		        this.href = 'data:text/plain;charset=utf-8,'
+		    		          + encodeURIComponent(JSON.stringify(cam));
+		    		      };      */
+		    		      
+		    		}			    		
+		    	});
+		  
+		    $('#cancelOperation').on('click', function(e){
+		    	
+		    	resetSession();
+				
+				window.location.href = "dashboard_es.html";		    	
+		    });
+			
+			
+		    
+		  //---------------------------------Duplicate question
+		    $('#copyQues').on('click', function(e) {
+		    	var found = false;
+		    	
+		    			
+		    		var value = $('#selection').val();
+		    		for (var i = 0;i<Question_Array.length;i++)
+		    			{
+		    				if (Question_Array[i].getID() == value)	
+		    					{
+		    						found = true;
+		    						console.log("Will duplicate question " + value);
+		    						var selectedQuesType =  Question_Array[i].getType();
+		    						
+		    						switch (selectedQuesType)
+		    						{
+		    							case FreeTextSingle_const:
+		    								
+		    								var quesID = "Q" + question_number;
+		    				    			question_number++;
+		    								var temp = new FreeTextSingle(quesID, Question_Array[i].getType(), Question_Array[i].getLabel());
+		    				    			Question_Array.push(temp);
+		    				    			
+		    				    			addNode(quesID);
+		    				    			/*
+		    				    			//Visually add the node(by default it is disconnected) to the graph
+		    				      			cy.add({
+		    				        	 	   group: "nodes",
+		    				        	  	  data: { id: quesID },
+		    				        		    //position: { x: question_number * 20 , y: question_number * 20  }
+		    				        	  		position: { x: getNodePositionX() + 30 , y: getNodePositionY() + 30  }
+		    				      		 	});
+		    				    			*/
+		    				    			
+		    				    			/*
+		    				      			//Add the default transition ("end transition") to the question just created
+		    				     	 		var blank_condition = [];
+		    				     	 		var temp_WorkflowElement = new Workflow_Element(quesID,blank_condition);
+		    				    			Campaign_Workflow.push(temp_WorkflowElement);
+		    				    			*/
+		    				    			addDefaultTransition(quesID);
+		    				    			nodeSequence.push(quesID);
+											addTransition(nodeSequence);
+											console.log('NodeSequence is ' + JSON.stringify(nodeSequence));
+											$('#FreeTextSingle_Cancel').trigger(e.type);
+		    				    			
+		    				    			break;
+		    				    		
+		    				      		case FreeTextMulti_const:
+		    				      				
+		    				      			var quesID = "Q" + question_number;
+			    				    		question_number++;
+			    				    		var temp = new FreeTextMulti(quesID, Question_Array[i].getType(), Question_Array[i].getLabel(), Question_Array[i].getSubcomponent());
+			    				    		Question_Array.push(temp);
+			    				    		
+			    				    		addNode(quesID);
+			    				    		addDefaultTransition(quesID);
+			    				    		nodeSequence.push(quesID);
+											addTransition(nodeSequence);
+											console.log('NodeSequence is ' + JSON.stringify(nodeSequence));
+											$('#FreeTextMulti_Cancel').trigger(e.type);
+			    				    		
+		    				      			break;
+		    				      				
+										case MultipleChoiceSingle_const:
+		    				      				
+		    				      			var quesID = "Q" + question_number;
+			    				    		question_number++;
+			    				    		var temp = new MultipleChoiceSingle(quesID, Question_Array[i].getType(), Question_Array[i].getLabel(), Question_Array[i].getSubcomponent());
+			    				    		Question_Array.push(temp);
+			    				    		
+			    				    		addNode(quesID);
+			    				    		addDefaultTransition(quesID);
+			    				    		nodeSequence.push(quesID);
+											addTransition(nodeSequence);
+											console.log('NodeSequence is ' + JSON.stringify(nodeSequence));
+											$('#MultipleChoiceSingle_Cancel').trigger(e.type);
+			    				    		
+		    				      			break;
+		    				      			
+										case MultipleChoiceMulti_const:
+		    				      			
+		    				      			var quesID = "Q" + question_number;
+			    				    		question_number++;
+			    				    		var temp = new MultipleChoiceMulti(quesID, Question_Array[i].getType(), Question_Array[i].getLabel(), Question_Array[i].getSubcomponent());
+			    				    		Question_Array.push(temp);
+			    				    		
+			    				    		addNode(quesID);
+			    				    		addDefaultTransition(quesID);
+			    				    		nodeSequence.push(quesID);
+											addTransition(nodeSequence);
+											console.log('NodeSequence is ' + JSON.stringify(nodeSequence));
+											$('#MultipleChoiceMulti_Cancel').trigger(e.type);
+			    				    		
+		    				      			break;
+		    				      			
+										case AudioSensor_const:
+		    				      			
+		    				      			var quesID = "Q" + question_number;
+			    				    		question_number++;
+			    				    		var temp = new AudioSensor(quesID, Question_Array[i].getType(), Question_Array[i].getLabel());
+			    				    		Question_Array.push(temp);
+			    				    		
+			    				    		addNode(quesID);
+			    				    		addDefaultTransition(quesID);
+			    				    		nodeSequence.push(quesID);
+											addTransition(nodeSequence);
+											console.log('NodeSequence is ' + JSON.stringify(nodeSequence));
+											$('#AudioSensor_Cancel').trigger(e.type);
+			    				    		
+		    				      			break;
+		    				      			
+										case TextDisplay_const:
+		    				      			
+		    				      			var quesID = "T" + question_number;
+			    				    		question_number++;
+			    				    		var temp = new TextDisplay(quesID, Question_Array[i].getType(), Question_Array[i].getLabel());
+			    				    		Question_Array.push(temp);
+			    				    		
+			    				    		addNode(quesID);
+			    				    		addDefaultTransition(quesID);
+			    				    		nodeSequence.push(quesID);
+											addTransition(nodeSequence);
+											console.log('NodeSequence is ' + JSON.stringify(nodeSequence));
+											$('#TextDisplay_Cancel').trigger(e.type);
+			    				    		
+		    				      			break;
+		    				      			
+										case FreeNumericSingle_const:
+		    				      			
+		    				      			var quesID = "Q" + question_number;
+			    				    		question_number++;
+			    				    		var temp = new FreeNumericSingle(quesID, Question_Array[i].getType(), Question_Array[i].getLabel());
+			    				    		Question_Array.push(temp);
+			    				    		
+			    				    		addNode(quesID);
+			    				    		addDefaultTransition(quesID);
+			    				    		nodeSequence.push(quesID);
+											addTransition(nodeSequence);
+											console.log('NodeSequence is ' + JSON.stringify(nodeSequence));
+											$('#FreeNumericSingle_Cancel').trigger(e.type);
+											
+											break;
+		    				      			
+										case ContRange_const:
+		    				      			
+		    				      			var quesID = "Q" + question_number;
+			    				    		question_number++;
+			    				    		var temp = new ContRange(quesID, Question_Array[i].getType(), Question_Array[i].getLabel(), Question_Array[i].getSubcomponent());
+			    				    		Question_Array.push(temp);
+			    				    		
+			    				    		addNode(quesID);
+			    				    		addDefaultTransition(quesID);
+			    				    		nodeSequence.push(quesID);
+											addTransition(nodeSequence);
+											console.log('NodeSequence is ' + JSON.stringify(nodeSequence));
+											$('#ContRange_Cancel').trigger(e.type);
+			    				    		
+		    				      			break;	  
+
+										case UploadPhoto_const:
+		    				      			
+		    				      			var quesID = "Q" + question_number;
+			    				    		question_number++;
+			    				    		var temp = new UploadPhoto(quesID, Question_Array[i].getType(), Question_Array[i].getLabel());
+			    				    		Question_Array.push(temp);
+			    				    		
+			    				    		addNode(quesID);
+			    				    		addDefaultTransition(quesID);
+			    				    		nodeSequence.push(quesID);
+											addTransition(nodeSequence);
+											console.log('NodeSequence is ' + JSON.stringify(nodeSequence));
+											$('#UploadPhoto_Cancel').trigger(e.type);
+											
+											break;											
+		    						}    						
+		    					}
+		    			}	    			
+		    });		    
+		    
+		    
+		    
+		
+	});
+	</script>
+</head>
+
+
+
+
+<body> 
+<br><br>
+<!--Nav-->
+<nav class="navbar navbar-inverse navbar-fixed-top" style="background: #4c8dc7;">
+    <div class="container">
+        <div class="navbar-header">
+            <!--Part of left-->
+            
+            <div id="stepsUserAuth">
+                <a class="navbar-brand" href="" title="NavApps">
+                    <img src="geoc.png" alt="Geo-C" height="30px" style="display: inline">                    
+                </a>
+            <span class="navbar-brand steps">                  
+            </span>
+            </div>            
+        </div>
+        <!--Part of right-->
+        <div id="navbar" class="navbar-collapse collapse">   
+		
+			<form class="navbar-form navbar-right">
+                <!--If the person authenticate in web page these button won't appear-->
+                <div id="loginButtonsUserNoAuth">                    
+                    
+                    
+					
+					<button type="button"               class="btn btn-info" id="help"> Help <span class="glyphicon glyphicon-pushpin"> </button>
+					
+                </div>
+                <!--If the person authenticate in web page these button will appear-->
+                
+                
+            </form>
+		
+        </div><!--/.navbar-collapse -->
+    </div>
+</nav>   
+
+<div id="help_window" title="Hello  World!"><p><font face="Georgia" size="4">
+	Instruction for this step</font></p>
+</div> 
+
+  
+
+      <div id="questionTypeLeft" class="col-sm-2">
+	  <br>
+	  <!-- graph : start -->
+        <div class="panel panel-primary">
+          <div class="panel-heading" style="background-color: #4c8dc7;">Paso 1: Cree nuevas preguntas. </div>	  
+		  
+          <div class="panel-body">
+            
+            <select id='listQuestionType' style="width: 100% !important; min-width: 100%; max-width: 100%;">
+			<option value="-1">Seleccione una pregunta</option>
+			<option value="0">Tipo1 - Pregunta con una respuesta de texto</option>
+			<option value="1">Tipo2 - Pregunta con múltiples respuestas de texto</option>
+			<option value="2">Tipo3 - Múltiples opciones con una única respuesta </option>
+			<option value="3">Tipo4 - Múltiples opciones con múltiples respuestas </option>
+			<option value="4">Tipo5 - Texto de separación</option>
+			<!-- <option value="5">Audio Sensor</option> -->
+			<option value="6">Tipo7 - Pregunta con una respuesta numérica</option>
+			<option value="7">Tipo8 - Rango numérico</option>
+			<option value="8">Tipo9 - Subir foto</option>
+			
+			</select>           
+          </div>         
+        </div>
+        <!-- graph : end -->   
+		
+		<!-- graph : start -->
+        <div class="panel panel-primary">
+          <div class="panel-heading" style="background-color: #4c8dc7;">Paso 2: Actualice los enlaces entre las preguntas (opcional)</div>	  
+		  
+          <div class="panel-body">
+		  
+		  <button id = "default_tran"     class="btn btn-primary  btn-block button_custom_color active" style="white-space:normal;" > Transición por defecto </button>            
+                      
+          </div>         
+        </div>
+        <!-- graph : end -->  
+		
+		
+		
+			<br>
+			
+			
+			<!-- <button id = "FreeTextSingle"       class="btn btn-primary btn-block  button_custom_color  active" style=" white-space:normal;" data-toggle="FreeTextSingle-tooltip" title="Create a FreeTextSingle with one textfield to input text"> FreeText Single </button> -->
+			<!-- <br><br> -->
+			<!-- <button id = "FreeTextMulti"        class="btn btn-primary btn-block  button_custom_color  active" style=" white-space:normal;" data-toggle="FreeTextMulti-tooltip"  title="Create a FreeTextMulti with multiple textfields to input text"> FreeText Multi</button> -->
+			<!-- <br><br> -->
+			<!-- <button id = "MultipleChoiceSingle" class="btn btn-primary btn-block  button_custom_color  active" style=" white-space:normal;" data-toggle="MultipleChoiceSingle-tooltip" title="Create a MultipleChoiceSingle with radio buttons"> MultipleChoice Single Answer </button> -->
+			<!-- <br><br> -->
+			<!-- <button id = "MultipleChoiceMulti"  class="btn btn-primary btn-block  button_custom_color  active" style=" white-space:normal;" data-toggle="MultipleChoiceMulti-tooltip" title="Create a MultipleChoiceMulti with checkboxs"> MultipleChoice Multiple Answers </button> -->
+			<!-- br><br> -->
+			<!-- <button id = "AudioSensor"  disabled class="btn btn-primary btn-block  button_custom_color  active" style=" white-space:normal;" data-toggle="AudioSensor-tooltip" title="Create a question to measure noise"> AudioSensor </button> -->
+			<!-- <br><br> -->
+			<!-- <button id = "TextDisplay"          class="btn btn-primary btn-block  button_custom_color  active" style=" white-space:normal;" data-toggle="TextDisplay-tooltip" title="Create a text notice"> TextDisplay </button>		-->
+			<!-- <br><br> -->
+			<!-- <button id = "FreeNumericSingle"    class="btn btn-primary btn-block  button_custom_color  active" style=" white-space:normal;" data-toggle="FreeNumericSingle-tooltip" title="Create a FreeNumericSingle with one field to input numbers"> FreeNumeric Single </button> -->
+			<!-- <br><br> -->
+			<!-- <button id = "ContRange"    		class="btn btn-primary btn-block  button_custom_color  active" style=" white-space:normal;" data-toggle="ContRange-tooltip" title="Create a ContRange with one slider to input numbers"> ContRange </button> -->
+			
+			<br>
+			<button id = "complete"             class="btn btn-primary btn-block btn-success active" ><b>  Terminar campaña <span class="glyphicon glyphicon-ok"></span>  </b> </button> 
+			<br><br> 
+			<button id = "cancelOperation"      class="btn btn-primary btn-block btn-danger active" ><b> Cancelar operación</b> </button> 
+      </div>
+      
+      <div class="col-sm-4">
+      
+      <input class="form-control hidden" id="selection" type="text" style="width:100%;">
+	  
+	  <br><br>
+	  <div id="commonDiv"  class = " begin_step2 question FreeTextSingle edit_form">	  
+			  
+			  Texto de la pregunta:<br>  <input type="text" class = "common_input form-control" id="common_QuesText" ><br>
+			  
+			  <p id="photo_attach_text"> Puede adjuntar una foto a la pregunta (opcional) </p>
+			  <br>
+			  <form id="uploadForm" action="upload_ajax.php" method="post" enctype="multipart/form-data" target="upload_target" >
+                     <!-- <p id="f1_upload_process">Loading...<br/><img src="loader.gif" /><br/></p> -->
+                     <p id="f1_upload_form" ><br/>
+                         <label>Archivo:  
+                              <input id="fileSelector" name="myfile" type="file" size="30" />
+                         </label>
+                     </p>
+				</form>
+	   
+       <button id="submitForm" class="btn btn-primary" > <span class="glyphicon glyphicon-open"></span> Subir</button> 		
+			<br><br>
+			</div>
+			
+			<div id="commonDivEdit"  class = " begin_step2 ">	  
+			  
+			  Texto de la pregunta:<br>  <input type="text" class = "common_input form-control" id="commonEdit_QuesText" ><br>
+			  
+			  Figura para esta pregunta: <br>  <input type="text" class = "common_input form-control" id="commonEdit_QuesPicURL"  disabled ><br>
+			  
+			  <button id="removePic" class="btn btn-warning" >Eliminar esta figura </button> 		
+			  <br><br>
+			  Puede adjuntar una nueva foto para esta pregunta (opcional) 
+			  <br>
+			  <form id="uploadFormEdit" action="upload_ajax.php" method="post" enctype="multipart/form-data" target="upload_target" >
+                     <!-- <p id="f1_upload_process">Loading...<br/><img src="loader.gif" /><br/></p> -->
+                     <p id="f1_upload_form" ><br/>
+                         <label>Archivo:  
+                              <input id="fileSelectorEdit" name="myfile" type="file" size="30" />
+                         </label>
+                     </p>
+				</form>
+	   
+       <button id="uploadNewPic" class="btn btn-primary" > <span class="glyphicon glyphicon-open"></span> Subir nueva foto </button> 		
+			
+			</div>
+			
+			
+	  
+      
+      		<!-- Form FreeTextSingle -->
+      		<div id="FreeTextSingle_Form"  class = "begin_step2 question FreeTextSingle edit_form">
+			<br><br>			
+			
+			<button id = "FreeTextSingle_Save"    class="btn btn-success">  Guardar pregunta</font>  </button>  
+			<button id = "FreeTextSingle_Cancel"  class="btn btn-warning">  Cancelar</font> </button>
+			
+			</div>
+			
+			<!-- Form FreeTextMulti -->
+			<div id="FreeTextMulti_Form"            class = "begin_step2 question FreeTextMulti edit_form">
+			<br><br>		
+			
+			<div> <button id = "FreeTextMulti_addSubcomponent" class = "btn"> <span class="glyphicon glyphicon-plus-sign"></span> Añadir sub-pregunta </button> </div>
+			<br>
+			<button id = "FreeTextMulti_Save"   class="btn btn-success">  Guardar pregunta</font>  </button>  
+			<button id = "FreeTextMulti_Cancel" class="btn btn-warning">  Cancelar</font> </button>			
+			
+			</div>
+			
+			<!-- Form MultipleChoiceSingle -->
+			<div id="MultipleChoiceSingle_Form"     class = "begin_step2 question MultipleChoiceSingle edit_form">
+			<br><br>			
+						
+			<div> <button id = "MultipleChoiceSingle_addSubcomponent" class = "btn"> <span class="glyphicon glyphicon-plus-sign"></span> Añadir otra opción mutualmente exclusiva </button> </div>
+			<br>
+			<button id = "MultipleChoiceSingle_Save"   class="btn btn-success">  Guardar pregunta</font>  </button>  
+			<button id = "MultipleChoiceSingle_Cancel" class="btn btn-warning">  Cancelar</font> </button>
+			
+			</div>
+			
+			<!-- Form MultipleChoiceMulti -->
+			<div id="MultipleChoiceMulti_Form"      class = "begin_step2 question MultipleChoiceMulti edit_form">
+			<br><br>		
+			<div> <button id = "MultipleChoiceMulti_addSubcomponent" class = "btn">  <span class="glyphicon glyphicon-plus-sign"></span>Añadir otra opción </button> </div>
+			<br>
+			<button id = "MultipleChoiceMulti_Save"   class="btn btn-success">  Guardar pregunta</font>  </button>  
+			<button id = "MultipleChoiceMulti_Cancel" class="btn btn-warning">  Cancelar</font> </button>
+			
+			</div>
+			
+			<!-- Form AudioSensor -->
+			<div id="AudioSensor_Form"              class = "begin_step2 question AudioSensor edit_form">
+			<br><br>			
+			<button id = "AudioSensor_Save"    class="btn btn-success">  Guardar pregunta</font>  </button>  
+			<button id = "AudioSensor_Cancel"  class="btn btn-warning">  Cancelar</font> </button>
+			
+			</div>
+			
+			<!-- Form TextDisplay -->
+			<div id="TextDisplay_Form"           class = "begin_step2 question TextDisplay edit_form">
+			<br><br>			
+			<button id = "TextDisplay_Save"    class="btn btn-success">  Guardar pregunta</font>  </button>  
+			<button id = "TextDisplay_Cancel"  class="btn btn-warning">  Cancelar</font> </button>
+			
+			</div>
+			
+			<!-- Form FreeNumericSingle -->
+      		<div id="FreeNumericSingle_Form"  class = "begin_step2 question FreeNumericSingle edit_form">
+			<br><br>		
+			<button id = "FreeNumericSingle_Save"    class="btn btn-success">  Guardar pregunta</font>  </button>  
+			<button id = "FreeNumericSingle_Cancel"  class="btn btn-warning">  Cancelar</font> </button>
+			
+			</div>
+			
+			<!-- Form ContRange -->
+      		<div id="ContRange_Form"  class = "begin_step2 question ContRange edit_form">
+			<br><br>
+			  
+			  Valor <b>mínimo </b>del rango (sólo números enteros):<br>	<input type="text" class = "ContRange_input form-control" id="ContRange_min"><br> 
+			  Valor <b>máximo </b>del rango (sólo números enteros):<br>	<input type="text" class = "ContRange_input form-control" id="ContRange_max"><br>
+			  
+			  
+			
+			<button id = "ContRange_Save"    class="btn btn-success">  Guardar pregunta</font>  </button>  
+			<button id = "ContRange_Cancel"  class="btn btn-warning">  Cancelar</font> </button>
+			
+			</div>
+			
+			<!-- Form UploadPhoto -->
+      		<div id="UploadPhoto_Form"  class = "begin_step2 question UploadPhoto edit_form">
+			<br><br>		
+			<button id = "UploadPhoto_Save"    class="btn btn-success">  Guardar pregunta</font>  </button>  
+			<button id = "UploadPhoto_Cancel"  class="btn btn-warning">  Cancelar</font> </button>
+			
+			</div>
+			
+			<!-- Default Transition form -->
+			<div id="default_transition"            class = "begin_step2 quesTrans edit_form">
+			<br><br>  
+			<form id="default_transition_form"  action="">
+			<!-- Please type the ID of the origin and destination question -->
+			
+			<br>
+			<!-- Origin question:        <br>  <input type="text" class = "default_tran form-control" id="default_tran_origin"><br> -->
+			<!-- Destination Question:   <br>  <input type="text" class = "default_tran form-control" id="default_tran_destination"><br>  -->
+			
+			</form>
+			
+			<br><br> 
+			<button id = "default_transition_OK"    class="btn btn-success">  OK </font>  </button>  
+			<button id = "default_transition_Cancel"  class="btn btn-warning">  Cancelar</font> </button>
+			</div>
+			
+			<!-- Conditional Transition form -->
+			<div id="conditional_transition"        class = "begin_step2 quesTrans edit_form">
+			<br><br>  
+			<form id="conditional_transition_form"  action="">
+			Please type the ID of the origin and destination question
+			
+			<br>
+			Origin question:        <br>  <input type="text" class = "conditional_tran form-control" id="conditional_tran_origin"><br>
+			<!-- The logical expression  <br>  <input type="text" class = "conditional_tran form-control" id="conditional_tran_expression"><br> -->
+			
+			<form id="conditional">
+				<input id='' name='primitive' type='radio' value="value" />the only answer
+				<br />
+				<input id='' name='primitive' type='radio' value="values" />all answers
+				<br />
+				<input id='' name='primitive' type='radio' value="count" />the number of answer
+			</form>
+			<br>
+
+				<!-- The parameter of primitive VALUE -->
+				<div id='value_0' style='display:none'>
+					<select id="stringOperand">  
+						  <option value="==">is</option>
+						  <option value="!=">is not</option>
+							  
+					</select>
+					<input type="textbox" id="value_parameter_0">
+				</div>
+
+				<!-- The parameter of primitive VALUES -->
+				<div id='values_0' style='display:none'>
+					contains 
+					<input type="textbox" id="values_parameter_0">
+				</div>
+
+				<!-- The parameter of primitive COUNT -->
+				<div id='count_0' style='display:none'>
+
+					<select id="numericOperand">  
+						  <option value=">">></option>
+						  <option value=">=">>=</option>
+						  <option value="==">=</option>		  
+					</select>
+					
+					<input type="textbox" id="count_parameter_0">
+					
+				</div>
+			
+			<br>
+			Destination Question:   <br>  <input type="text" class = "conditional_tran form-control" id="conditional_tran_destination"><br> 
+			
+			</form>
+			
+			<button id = "conditional_transition_OK"    class="btn btn-success">  OK   </button>  
+			<button id = "conditional_transition_Cancel"  class="btn btn-warning" style="white-space:normal;">  Cancel</button>
+			</div>
+			
+      <!-- End of col-lg-4 -->  
+      </div>
+      
+      
+      
+      <div class="col-sm-6">
+      
+		<br>
+        <!-- graph : start -->
+        <div class="panel panel-primary">
+          <div class="panel-heading" style="background-color: #4c8dc7;">Área del gráfico</div>
+		  
+		  <button id = "help_graph_button" class="btn btn-info" > <span class="glyphicon glyphicon-pushpin"></span> Help graph </button>
+          <div class="panel-body">
+            <div id="cy"></div>
+            <br>
+           
+          </div>          
+          
+        <button id = "new_selectStart" class="btn" data-toggle="Start-tooltip" title="Haz click en la pregunta  para seleccionarla y luego en este botón para convertirla en el punto de inicio de la campaña." >  Selecionar como pregunta de inicio   </button>
+        <button id = "copyQues" class="btn btn-primary" data-toggle="Duplicate-tooltip" title="Haz click en la pregunta  para seleccionarla y luego en este botón para duplicar la pregunta seleccionada. Recuerda modificar la pregunta una vez creada." > Duplicar pregunta </button>
+		<button id = "new_delete" class="btn btn-danger" data-toggle="Delete-tooltip" title="Haz click en una pregunta  o enlace para seleccionarlo y haz click en este botón para eliminarlo. " > <span class="glyphicon glyphicon-remove-sign"></span> Eliminar </button>
+        </div>
+        <!-- graph : end -->
+
+      </div> 
+
+		<div id="help_graph_div" title="Help for the graph area!"><p><font face="Georgia" size="4">
+		
+		 <p> Pasa el ratón sobre las preguntas para ver los detalles, puedes hacer click para editar y arrastrar para posicionar las preguntas. </p>
+		  <p> El usuario puede hacer zoom y mover el área del gráfico.
+  </p>
+	
+		</div>
+  
+
+</body>
+</html>

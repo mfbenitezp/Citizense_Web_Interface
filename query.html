@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<!-- Include JS File Here -->
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+
+<script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+<link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+
+
+
+<style type="text/css">
+
+
+
+	.tablestyle{
+		/*width:100%;*/ 
+		border-collapse:collapse; 
+	}
+	.tablestyle td{ 
+		padding:7px; border:#4e95f4 1px solid;
+	}
+	/*  Define the background color for all the ODD background rows  */
+	.tablestyle tr:nth-child(odd){ 
+		background: #b8d1f3;
+	}
+	/*  Define the background color for all the EVEN background rows  */
+	.tablestyle tr:nth-child(even){
+		background: #dae5f4;
+	}
+	.highlight
+	{
+		background:red;
+	}
+	
+	.highlighthover
+	{
+		background:  #26cd77 ;
+	}
+</style>
+
+<script type="text/javascript">
+
+$( document ).ready(function() {
+	
+	var urlParams;
+(window.onpopstate = function () {
+    var match,
+        pl     = /\+/g,  // Regex for replacing addition symbol with a space
+        search = /([^&=]+)=?([^&]*)/g,
+        decode = function (s) { return decodeURIComponent(s.replace(pl, " ")); },
+        query  = window.location.search.substring(1);
+
+    urlParams = {};
+    while (match = search.exec(query))
+       urlParams[decode(match[1])] = decode(match[2]);
+})();
+
+	alert(JSON.stringify(urlParams));
+	alert(urlParams.param1);
+	
+});
+</script>
+
+</head>
+
+<body>
+
+
+
+
+
+
+<div id="left" class="col-lg-4">
+
+</div>
+
+<div id="right" class="col-lg-8">
+
+</div>
+
+
+
+
+
+
+
+
+</body>
+</html>
+
+<!-- <div class="im"> <img id="thumbnail1" src="UserUploadedPic/user24!1491482587008.jpg" width="300" height="300"> </div> -->
