@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-<meta charset="UTF-8">
+	<meta charset="UTF-8">
 <!-- Include JS File Here -->
 <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
 
@@ -334,15 +334,18 @@ $( document ).ready(function() {
 			            	sessionStorage.selection = selection;
 			            	window.location.href = "detailedStatistics.html";			            	
 			            }
-			         );
-				
-				
-				
-				
+			         );			
 			});	
+			
+	$('#logout').on('click', function(e)     
+	{
+		console.log('LOG OUT NOW');
+		sessionStorage.setItem('username', null);
+		localStorage.clear();
+		sessionStorage.clear();
+		window.location.href = "welcome_advanced.html";			            	
 	
-	
-	
+	});
 	
 	
 });
@@ -374,7 +377,21 @@ $( document ).ready(function() {
         </div>
         <!--Part of right-->
         <div id="navbar" class="navbar-collapse collapse">
-
+		
+		<form class="navbar-form navbar-right">
+                <!--If the person authenticate in web page these button won't appear-->
+                <div id="loginButtonsUserNoAuth">                    
+                    
+                    <button type="button" name="logout" class="btn btn-danger" id="logout">    Log out   </button>
+                    
+                </div>
+                <!--If the person authenticate in web page these button will appear-->
+                <div id="welcomeButtonsUserAuth">
+                    <span style="color: white" id="nameSurnameLoggedUserAuth">
+                        <!--Name of user, name and surname of the login user loaded from JS-->
+                    </span>
+                </div>                
+        </form>
             
         </div><!--/.navbar-collapse -->
     </div>

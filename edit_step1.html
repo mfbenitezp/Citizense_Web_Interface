@@ -76,7 +76,7 @@
 <table>
   <tr> 
   		<th> Campaign ID: </th> 
-  		<th> <input type="text" id="Campaign_ID"  class="form-control" style="width:50%;"> </th>  
+  		<th> <input type="text" id="Campaign_ID" disabled class="form-control" style="width:50%;"> </th>  
   </tr>
   <tr> 
   		<th> Campaign description:</th> 
@@ -84,9 +84,9 @@
   </tr>  
 </table>    
   
-  <input type="checkbox" name="mycheckbox" id="onetime"  value="0" /> Campaign to be executed only once? <br>
+  Parameter 1: <input type="checkbox" name="mycheckbox" id="onetime"  value="0" /> Campaign to be executed only once? <br>
   
-  <input type="checkbox" name="mycheckbox" id="expiry"  value="0" /> Time period of the campaign <br>
+  Parameter 2: <input type="checkbox" name="mycheckbox" id="expiry"  value="0" />  Time period of the campaign <br>
   
   <div id="mycheckboxdiv" style="display:none"  >  
    <!-- Start Date: <input type="text" id="datepicker"><br> -->    
@@ -118,7 +118,9 @@ th, td {
 }
 </style>
   
-  </div><br><br><br>    
+  </div><br>
+
+Parameter 3: <input type="checkbox" name="mycheckbox" id="viewResult" /> Tick if you want the public to see the aggregated and anonymized result of this campaign <br>    
   
 </div>
 
@@ -186,6 +188,8 @@ th, td {
 <script type="text/javascript">
 
 $( document ).ready(function() {
+
+	$('#info').hide();
 	
 	var config = JSON.parse(sessionStorage.campaign);
 	console.log('Campaign config is ' + JSON.stringify(config));
@@ -218,12 +222,36 @@ $( document ).ready(function() {
 		$('#endHour').val( config.endDate.substring(config.endDate.indexOf(" ")+1, config.endDate.indexOf(" ") +3 ) );		
 		
 		$('#endMinute').val( config.endDate.substring(config.endDate.indexOf(" ")+4, config.endDate.indexOf(" ") +6 ) );	
-	}	
+	}
+
+	if (config.showResult == 'true')
+	{
+		$('#viewResult').prop('checked', true);
+	}
+	
+	var GPS_List = [];
+	var Mercator_List = [];
 	
 	if (config.geoBoolean == 'true')
 	{
 		$('#geo').prop('checked', true);
 		$('#info').show();
+		console.log('Length of list of shape is ' + config.PoI_list.length);
+		for (var i=0;i < config.PoI_list.length;i++)
+		{
+			console.log('Shape GPS ' + i + ' is ');
+			console.log(config.PoI_list[i]);
+			GPS_List.push(config.PoI_list[i]);
+		}
+		for (var i=0;i < config.PoI_list_WebMercator.length;i++)
+		{
+			console.log('Shape Mercator ' + i + ' is ');
+			console.log(config.PoI_list_WebMercator[i]);
+			Mercator_List.push(config.PoI_list_WebMercator[i]);
+		}
+		
+		//console.log('The list of shapes in GPS format is ' + JSON.parse(config.PoI_list));
+		//console.log('The list of shapes in Web Mercator format is ' + JSON.parse(config.PoI_list_WebMercator));
 	}	
 	
 	$('#geo').change(function() {
@@ -252,6 +280,7 @@ $( document ).ready(function() {
 		var endDate;
 		var AreaOfInterestBoolean;
 		var userID = sessionStorage.getItem('username');
+		var showResultBinary;
 				
 		
 		CampaignID = $('#Campaign_ID').val();
@@ -263,7 +292,9 @@ $( document ).ready(function() {
 		onetime = $('#onetime').is(':checked') ? true : false ;
 		console.log('Boolean value of onetime is ' + onetime);
 		
-		expiry = $('#expiry').is(':checked') ? true : false ;
+		expiry = $('#expiry').is(':checked') ? true : false ;		
+		
+		showResultBinary = $('#viewResult').is(':checked') ? true : false ;
 		
 		console.log('Expiry value is ' + expiry);
 		if (expiry == true)
@@ -295,6 +326,8 @@ $( document ).ready(function() {
 		console.log('Value of Area Boolean is ' + AreaOfInterestBoolean);
 		
 		console.log(JSON.stringify(area_list));	
+		console.log('Check: GPS_List is ' + JSON.stringify(GPS_List));
+		console.log('Check: Mercator_List is ' + JSON.stringify(Mercator_List));
 		
 		if ( $('#Campaign_ID').val() == '' ) 
 			alert('Campaign name cannot be empty');
@@ -317,9 +350,10 @@ $( document ).ready(function() {
 				sessionStorage.startDate_Session             = startDate;
 				sessionStorage.endDate_Session               = endDate;
 				sessionStorage.AreaOfInterestBoolean_Session = AreaOfInterestBoolean;
-				sessionStorage.AreaOfInterest_Session        = JSON.stringify(area_list);	
+				sessionStorage.AreaOfInterest_Session        = JSON.stringify(GPS_List);	
 				sessionStorage.userID_Session                = userID;
-				sessionStorage.WebMercator_Session           = JSON.stringify(area_list_WebMercator);
+				sessionStorage.WebMercator_Session           = JSON.stringify(Mercator_List);
+				sessionStorage.showResultBoolean			 = showResultBinary;
 				
 				console.log('Session: ' + sessionStorage.CamID_Session);
 				console.log('Session: ' + sessionStorage.CamDescription_Session);
@@ -332,7 +366,7 @@ $( document ).ready(function() {
 				console.log('Session: ' + sessionStorage.userID_Session);
 				console.log('Session: ' + sessionStorage.WebMercator_Session);
 				
-				alert('Now move to next step: Defining questions and transitions');
+				//alert('Now move to next step: Defining questions and transitions');
 				
 				window.location.href = "edit_step2.html";
 				
@@ -347,8 +381,10 @@ $( document ).ready(function() {
 	//var array = [JSON.parse(str),JSON.parse(str2),JSON.parse(str3)];
 	var array = [];
 	
+	
 	for (var i=0;i<list.length;i++)
 		array.push( JSON.parse(list[i]) );
+		
 	
 	var map, tb;
 	//var area_list = [];
@@ -420,9 +456,20 @@ $( document ).ready(function() {
 	   	      if ( evt.target.id === "deleteall" ) 
 			  {
 	   	    	  map.graphics.clear();
-	   	    	  for (var i = area_list.length; i > 0; i--) {	  area_list.pop(); 		 }	    		  
-				  
+	   	    	  for (var i = area_list.length; i > 0; i--) {	  area_list.pop(); 		 }	  
 				  for (var j = area_list_WebMercator.length; j > 0; j--) {   area_list_WebMercator.pop();   }  
+				  
+				  for (var x = GPS_List.length; x > 0; x--)
+				  {
+						GPS_List.pop();					
+				  }
+				  for (var y = Mercator_List.length; y > 0; y--)
+				  {
+						Mercator_List.pop();
+				  }
+				  
+				  console.log('After DELETE ALL, length of GPS_List is ' + GPS_List.length + ' and Mercator_List is ' + Mercator_List.length);				  
+				  
 	   	    	  console.log('Size of area array is ' + area_list.length);
 	   	    	  console.log( JSON.stringify(area_list) );
 	   	    	  return;
@@ -436,6 +483,10 @@ $( document ).ready(function() {
 				  console.log('Size of area array is ' + area_list.length);
 				  console.log('Size of Mercator array is ' + area_list_WebMercator.length);
 				  console.log( JSON.stringify(area_list) );
+				  
+				  GPS_List.splice(GPS_List.length-1, 1);
+				  Mercator_List.splice(Mercator_List.length-1,1);
+				  console.log('After DELETE LAST SHAPE, length of GPS_List is ' + GPS_List.length + ' and Mercator_List is ' + Mercator_List.length);				  
 				  return;
 	   	        }
 	   	      var tool = evt.target.id.toLowerCase();
@@ -469,14 +520,23 @@ $( document ).ready(function() {
 	   	    else {
 	   	      symbol = fillSymbol;
 	   	    }
+			
+			
 	   	    
 	   	    var graphic_converted = webMercatorUtils.webMercatorToGeographic(evt.geometry);
 	   	    
 	   	    var newGraphic = new Graphic(evt.geometry, symbol);
-	   	    map.graphics.add(newGraphic);	   	    
+	   	    map.graphics.add(newGraphic);	   	
+
+			console.log('The new shape in Mercator format is ' + JSON.stringify(newGraphic.toJson()));
+			console.log('The new shape in GPS format is ' + JSON.stringify(graphic_converted.toJson()));
 			
 			area_list.push(JSON.stringify(graphic_converted.toJson()));
 			area_list_WebMercator.push(JSON.stringify(newGraphic.toJson()));
+			
+			GPS_List.push(JSON.stringify(graphic_converted.toJson()));
+			Mercator_List.push(JSON.stringify(newGraphic.toJson()));
+			console.log('After DRAWING, length of GPS_List is ' + GPS_List.length + ' and Mercator_List is ' + Mercator_List.length);				  
 			
 	   	    //alert(JSON.stringify(graphic_converted.toJson()));
 	   	    console.log('Size of area array is ' + area_list.length);   

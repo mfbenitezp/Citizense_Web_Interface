@@ -80,8 +80,10 @@
    
   		<tr> Please enter a <b>campaign name </b> that clearly describes the purpose of your campaign. This is what participants will see in the list of campaigns! </tr> 
   		<tr> <input type="text" id="Campaign_ID" class="form-control" style="width:70%;"> </tr>  
+		
+		<tr> <button id="checkName"  class="btn btn-primary">Check name availability</button> </tr>
   
-   
+		<br><br>
   		<tr> Campaign description:</tr> 
   		<tr> <textarea type="text" id="Campaign_Description"  class="form-control"style="width:70%;" rows="5" cols="60"></textarea> </tr>  
     
@@ -330,6 +332,46 @@ $( document ).ready(function() {
 	$('[data-toggle="Circle-tooltip"]').tooltip(); 
 	$('[data-toggle="Polygon-tooltip"]').tooltip(); 
 	
+	function recursiveGetProp(obj, lookup, callback) {
+	    for (property in obj) {
+	        if (property == lookup) {
+	            callback(obj[property]);
+	        } else if (obj[property] instanceof Object) {
+	            recursiveGetProp(obj[property], lookup, callback);
+	        }
+	    }
+	}
+	
+	$('#checkName').on('click', function(e){
+		console.log('Check name now');
+		var input = $('#Campaign_ID').val().trim();
+		var allName = [];
+		$.post(			                
+			            "checkName.php",
+			            { 
+			            	data: input 			                  
+			            },
+			            function(data) {			               
+			                
+			               console.log(data);	
+			               var Jobj = JSON.parse(data); 
+			               
+			               recursiveGetProp(Jobj, 'campaign_ID', function(obj) 
+			            		   {
+										//console.log(obj);
+										allName.push(obj)
+								    });
+							console.log('All name is ' + JSON.stringify(allName));
+							
+							if ( allName.indexOf(input) > -1 )
+							alert('There is already a campaign with the same name');
+							else
+							alert('The name is OK');
+			            }
+			         );
+		
+	});
+	
 	
 	$('#next').on('click', function(e){
 		
@@ -342,9 +384,10 @@ $( document ).ready(function() {
 		var AreaOfInterestBoolean;
 		var userID = sessionStorage.getItem('username');
 		var showResult;
-				
 		
-		CampaignID = $('#Campaign_ID').val();
+		var check = true;				
+		
+		CampaignID = $('#Campaign_ID').val().trim();
 		console.log(CampaignID);
 		
 		
@@ -357,11 +400,27 @@ $( document ).ready(function() {
 		
 		showResult = $('#viewResult').is(':checked') ? true : false ;
 		
-		console.log('Expiry value is ' + expiry);
+		console.log('Expiry value is ' + expiry);		
+		
 		if (expiry == true)
 			{
+				if ( isNaN($('#startHour').val()) || isNaN($('#startMinute').val()) || isNaN($('#endHour').val()) || isNaN($('#endMinute').val())  )
+				{
+					check = false;
+					alert('Make sure the hour and minute input are numbers');
+				}
+				
+				if ( parseInt( $('#startHour').val() ) >= 24 || parseInt( $('#startHour').val() ) <= -1 || parseInt( $('#startMinute').val() ) >= 60 || parseInt( $('#startMinute').val() ) <= -1 || parseInt( $('#endHour').val() ) >=24 || parseInt( $('#endHour').val() ) <=-1|| parseInt( $('#endMinute').val() ) >=60 || parseInt( $('#endMinute').val() ) <= -1)
+				{
+					check = false;
+					alert('Make sure that hour are between 0 and 23  and/or minute are between 0 and 59');
+				}
+				
+				if (check == true)
+				{
 				startDate = $('#datepicker').val()  + ' ' + $('#startHour').val() + ':' + $('#startMinute').val()  ;				
 				endDate   = $('#datepicker2').val() + ' ' + $('#endHour').val()   + ':' + $('#endMinute').val()  ;				
+				}
 			}
 		
 		var DateStart = new Date();
@@ -388,18 +447,28 @@ $( document ).ready(function() {
 		
 		console.log(JSON.stringify(area_list));	
 		
+		//several checks before moving forward
 		if ( $('#Campaign_ID').val() == '' ) 
-			alert('Campaign name cannot be empty');
+			{		
+				alert('Campaign name cannot be empty');
+				check = false;
+			}
 		
-		else if (   ((expiry == true) && ( (startDate == '')||(endDate == '') ))   ) 
+		if (   ((expiry == true) && ( ($('#datepicker').val() == '')||($('#datepicker2').val() == '') ))   ) 
 			{
+				check = false;
 				alert("Please select a start date and/or an end date");			
 			}
-		else if ((DateEnd <= DateStart))
+		if ((DateEnd <= DateStart))
 			{
+				check = false;
+				$('#datepicker').select();
+				$('#datepicker2').select();
 				alert("Please make sure End Date > Start Date");				
-			}
-		else 
+			}		
+		
+		
+		if (check == true) 
 			{
 				//Send campaign parameters to the next page (CreateCampaign_step2.html)
 				sessionStorage.CamID_Session                 = CampaignID;

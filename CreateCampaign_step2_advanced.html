@@ -57,7 +57,6 @@ h1 {
 		const UploadPhoto_const				 = 'UploadPhoto';		
 		
 		
-		
 		console.log('Load ID is: ' + sessionStorage.CamID_Session);
 		console.log('Load Description is: ' + sessionStorage.CamDescription_Session);
 		console.log('Load onetimeBoolean is: ' + sessionStorage.onetimeBoolean_Session );
@@ -67,11 +66,11 @@ h1 {
 		console.log('Load AreaOfInterest_Boolean: ' + sessionStorage.AreaOfInterestBoolean_Session);
 		console.log('Load AreaOfInterest_Geography_list: ' + sessionStorage.AreaOfInterest_Session);
 		console.log('Load AreaOfInterest_WebMecartor_List: ' + sessionStorage.WebMercator_Session);
-		
+
 		console.log('Load extrinsicBoolean: ' + sessionStorage.extrinsicBoolean);
 		console.log('Load incentiveList: ' + sessionStorage.incentiveList);
 		console.log('Load incentive contact: ' + sessionStorage.incentiveContact);
-		
+				
 		console.log('Load showResultBoolean: ' + sessionStorage.showResultBoolean);
 		
 		var Campaign_ID             = sessionStorage.CamID_Session;
@@ -93,6 +92,7 @@ h1 {
 		var userID                  = sessionStorage.userID_Session;
 		var nodeSequence = [];
 		var selectedFile = '';
+		//alert('UserID obtained from sessionStorage is ' + userID);
 		
 		var extrinsicBooleanValue = sessionStorage.extrinsicBoolean;
 		var incentiveList		  = JSON.parse(sessionStorage.incentiveList);
@@ -116,10 +116,11 @@ h1 {
 		console.log('Variable userID is ' + userID);
 		console.log('Variable nodeSequence is ' + JSON.stringify(nodeSequence));
 		console.log('Length of nodeSequence is ' + nodeSequence.length);
-		
+				
 		console.log('Varaible extrinsicBoolean is ' + extrinsicBooleanValue);
 		console.log('Variable incentiveList is ' + JSON.stringify(incentiveList));
 		console.log('Variable incentiveCOntact is ' + incentiveContact);
+		
 		
 		$('[data-toggle="FreeTextSingle-tooltip"]').tooltip(); 
 		$('[data-toggle="FreeTextMulti-tooltip"]').tooltip();
@@ -463,8 +464,9 @@ h1 {
 						$('#commonEdit_QuesPicURL').val( question.getLabel()[1]   );
 						if ( question.getLabel()[1] == '' ) $('#removePic').hide();	
 
-						$('#uploadForm').hide();
-						$('#submitForm').hide();						
+						$('#uploadFormEdit').hide();
+					$('#uploadNewPic').hide();
+					$('#photo_attach_text_edit').hide();						
 					  	
 					  }
 				  
@@ -689,7 +691,7 @@ h1 {
 	      {
 	    	  $('.begin_step2').hide();
 			  resetCommonForm();
-			  $('<p class="addedText"> This task asks participants to upload a photo (either already in their phone gallery or capture using the phone camera ) </p>').prependTo('#commonDiv');
+			  $('<p class="addedText"> This task asks participants to take a photo using the phone camera </p>').prependTo('#commonDiv');
 			  $('#commonDiv').show();
 	    	  $('#UploadPhoto_Form').show();
 			  $('#uploadForm').hide();
@@ -719,12 +721,24 @@ h1 {
 		    }
 		
 		$("#submitForm").click(function () {
-            var formData = new FormData($('#uploadForm')[0]);	
-				formData.append("userID",userID);
+		
+			var now = new Date();
+			var tail = '_' + now.getTime();
 			
-			selectedFile = cleaseText(document.getElementById('fileSelector').value);
+            var formData = new FormData($('#uploadForm')[0]);					
 			
-			console.log('Start uploading ' + selectedFile);
+			selectedFile = cleaseText(document.getElementById('fileSelector').value);		
+			
+			var originalFileNale = selectedFile;
+			console.log('Original fine name is ' + originalFileNale);
+			console.log('Tail is ' + tail);
+			var editedFileName = selectedFile.substring(0, selectedFile.lastIndexOf('.')) + tail + selectedFile.substring(selectedFile.lastIndexOf('.'), selectedFile.length);
+			console.log('Edited file name is ' + editedFileName);
+			selectedFile = editedFileName;
+
+			formData.append("finalName",editedFileName);			
+			
+			console.log('Start uploading ' + editedFileName);
 			
             $.ajax({
                 method: "POST",
@@ -742,21 +756,29 @@ h1 {
                 },
                 processData: false,
                 contentType: false,
-            });
-			
+            });			
         });
 		
 		$("#removePic").click(function () {  
 			$('#commonEdit_QuesPicURL').val('');    
 					
-		});
-		
-		
+		});		
 		
 		$("#uploadNewPic").click(function () {
+			var now = new Date();
+			var tail = '_' + now.getTime();
             var formData = new FormData($('#uploadFormEdit')[0]);			
 			
-			selectedFile = cleaseText(document.getElementById('fileSelector').value);
+			selectedFile = cleaseText(document.getElementById('fileSelectorEdit').value);
+			
+			var originalFileNale = selectedFile;
+			console.log('Original fine name is ' + originalFileNale);
+			console.log('Tail is ' + tail);
+			var editedFileName = selectedFile.substring(0, selectedFile.lastIndexOf('.')) + tail + selectedFile.substring(selectedFile.lastIndexOf('.'), selectedFile.length);
+			console.log('Edited file name is ' + editedFileName);
+			selectedFile = editedFileName;
+			
+			formData.append("finalName",editedFileName);		
 			
 			console.log('Start uploading ' + selectedFile);
 			
@@ -778,8 +800,7 @@ h1 {
                 contentType: false,
             });
 			
-        });
-		
+        });		
 		
 		function resetCommonForm()
 		    {
@@ -795,6 +816,7 @@ h1 {
 				$('#removePic').show();
 				
 				selectedFile = '';
+				
 				$('#uploadForm').show();
 				$('#submitForm').show();
 				$('#photo_attach_text').show();
@@ -814,6 +836,7 @@ h1 {
 				$('#removePic').show();
 				
 				selectedFile = '';
+				
 				$('#uploadForm').show();
 				$('#submitForm').show();
 				$('#photo_attach_text').show();
@@ -1166,7 +1189,7 @@ h1 {
 		    		{
 		    				var subcomponent_array = [];
 		    				var quesID = "Q" + question_number;
-		    				question_number++;
+		    				
 		    				var quesType = MultipleChoiceSingle_const;
 		    				var quesLabel = [$('#common_QuesText').val(),(selectedFile == '') ? '':'http://www.citizense.uji.es/Pic/' + selectedFile ,''/*blank value for audio URL*/];
 		    				
@@ -1180,31 +1203,43 @@ h1 {
 		    						  		if ($('#' + ID).val() != '') subcomponent_array.push(  $('#' + ID).val()  );
 		    						  }					  
 		    				  }	
+							  
+							  var numberSubcomponent = subcomponent_array.length;
+							  console.log('Number of subcomponent is ' + numberSubcomponent);
+							  
+							  if (numberSubcomponent <=1) //Not enough subcomponent
+								{
+									alert('Please make at least 2 options');									
+								}
+							else		//Everything is OK					
+							{
+								//Add the new MultipleChoiceSingle to the Question_Array of the Campaign
+								var temp = new MultipleChoiceSingle(quesID, quesType, quesLabel, subcomponent_array);
+								Question_Array.push(temp);
+								question_number++;
+								addNode(quesID);
+								addDefaultTransition(quesID);
+								
+								//reset text fields
+								$('.MultipleChoiceSingle_input').val('');
+								$(".subcomponent_MultipleChoiceSingle").remove()  ;
+								
+								//hide the form
+								$('#MultipleChoiceSingle_Form').hide();	
+								
+								//reset the variable that counts the subcomponent
+								subcomponent_count = 0;	
+								$("#display_hide").show();	
+								nodeSequence.push(quesID);
+								console.log('The nodeSequence is ' + JSON.stringify(nodeSequence));
+								
+								resetCommonForm();
+								
+								addTransition(nodeSequence);
+								checkFirstQuestion(nodeSequence, quesID);									
+							}
 		    				
-		    				//Add the new MultipleChoiceSingle to the Question_Array of the Campaign
-		    				var temp = new MultipleChoiceSingle(quesID, quesType, quesLabel, subcomponent_array);
-		    				Question_Array.push(temp);
-		    				
-		    				addNode(quesID);
-			    			addDefaultTransition(quesID);
-		    				
-		    				//reset text fields
-		    				$('.MultipleChoiceSingle_input').val('');
-		    				$(".subcomponent_MultipleChoiceSingle").remove()  ;
-		    				
-		    				//hide the form
-		    				$('#MultipleChoiceSingle_Form').hide();	
-		    				
-		    				//reset the variable that counts the subcomponent
-		    				subcomponent_count = 0;	
-		    				$("#display_hide").show();	
-		    				nodeSequence.push(quesID);
-		    				console.log('The nodeSequence is ' + JSON.stringify(nodeSequence));
-							
-							resetCommonForm();
-							
-							addTransition(nodeSequence);
-							checkFirstQuestion(nodeSequence, quesID);													
+		    																
 		    		}
 		    	else
 		    		{
@@ -1232,25 +1267,34 @@ h1 {
 		    					  		if ($('#' + ID).val() != '') subcomponent_array.push(  $('#' + ID).val()  );
 		    					  }
 		    				  }	
-		    				
-		    				//Add the new MultipleChoiceSingle to the Question_Array of the Campaign
-		    				var temp = new MultipleChoiceSingle(quesID, quesType, quesLabel, subcomponent_array);
-		    				Question_Array.push(temp);
-		    				
-		    				ID_of_edited_question = '';
-		    				
-		    				//reset text fields
-		    				$('.MultipleChoiceSingle_input').val('');
-		    				$(".subcomponent_MultipleChoiceSingle").remove()  ;
-		    				
-		    				//hide the form
-		    				$('#MultipleChoiceSingle_Form').hide();					
-		    				
-		    				//reset the variable that counts the subcomponent
-		    				subcomponent_count = 0;
-		    				resetCommonFormEdit();					    			
-		    		}	    	
-		    	
+							  
+							  var numberSubcomponent = subcomponent_array.length;
+							  console.log('Number of subcomponent is ' + numberSubcomponent);
+							  
+							  if (numberSubcomponent <=1) //Not enough subcomponent
+								{
+									alert('Please make at least 2 options');									
+								}
+							else
+							{
+								//Add the new MultipleChoiceSingle to the Question_Array of the Campaign
+								var temp = new MultipleChoiceSingle(quesID, quesType, quesLabel, subcomponent_array);
+								Question_Array.push(temp);
+								
+								ID_of_edited_question = '';
+								
+								//reset text fields
+								$('.MultipleChoiceSingle_input').val('');
+								$(".subcomponent_MultipleChoiceSingle").remove()  ;
+								
+								//hide the form
+								$('#MultipleChoiceSingle_Form').hide();					
+								
+								//reset the variable that counts the subcomponent
+								subcomponent_count = 0;
+								resetCommonFormEdit();	
+							}				    			
+		    		}	    		    	
 		    });
 		    
 		  //-------------------------------MultipleChoiceMulti----------------------------------------
@@ -1324,7 +1368,7 @@ h1 {
 		    	{
 		    			var subcomponent_array = [];
 		    			var quesID = "Q" + question_number;
-		    			question_number++;
+		    			
 		    			var quesType = MultipleChoiceMulti_const;
 		    			var quesLabel = [$('#common_QuesText').val(),(selectedFile == '') ? '':'http://www.citizense.uji.es/Pic/' + selectedFile ,''/*blank value for audio URL*/];
 		    			
@@ -1338,31 +1382,43 @@ h1 {
 		    					  		if ($('#' + ID).val() != '') subcomponent_array.push(  $('#' + ID).val()  );
 		    					  }					  
 		    			  }	
+						 
+						 var numberSubcomponent = subcomponent_array.length;
+						 console.log('Number of subcomponent is ' + numberSubcomponent);
+							  
+						  if (numberSubcomponent <=1) //Not enough subcomponent
+							{
+								alert('Please make at least 2 options');									
+							}
+						else
+						{
+							//Add the new MultipleChoiceMulti to the Question_Array of the Campaign
+							var temp = new MultipleChoiceMulti(quesID, quesType, quesLabel, subcomponent_array);
+							Question_Array.push(temp);
+							question_number++;
+							addNode(quesID);
+							addDefaultTransition(quesID);
+							
+							//reset text fields
+							$('.MultipleChoiceMulti_input').val('');
+							$(".subcomponent_MultipleChoiceMulti").remove()  ;
+							
+							//hide the form
+							$('#MultipleChoiceMulti_Form').hide();	
+							
+							//reset the variable that counts the subcomponent
+							subcomponent_count = 0;	
+							$("#display_hide").show();		
+							nodeSequence.push(quesID);
+							console.log('The nodeSequence is ' + JSON.stringify(nodeSequence));
+							
+							resetCommonForm();
+							
+							addTransition(nodeSequence);
+							checkFirstQuestion(nodeSequence, quesID);
+						}
 		    			
-		    			//Add the new MultipleChoiceMulti to the Question_Array of the Campaign
-		    			var temp = new MultipleChoiceMulti(quesID, quesType, quesLabel, subcomponent_array);
-		    			Question_Array.push(temp);
-		    			
-		    			addNode(quesID);
-		    			addDefaultTransition(quesID);
-		    			
-		    			//reset text fields
-		    			$('.MultipleChoiceMulti_input').val('');
-		    			$(".subcomponent_MultipleChoiceMulti").remove()  ;
-		    			
-		    			//hide the form
-		    			$('#MultipleChoiceMulti_Form').hide();	
-		    			
-		    			//reset the variable that counts the subcomponent
-		    			subcomponent_count = 0;	
-		    			$("#display_hide").show();		
-		    			nodeSequence.push(quesID);
-		    			console.log('The nodeSequence is ' + JSON.stringify(nodeSequence));
-						
-						resetCommonForm();
-						
-						addTransition(nodeSequence);
-						checkFirstQuestion(nodeSequence, quesID);												
+		    															
 		    	}
 		    	else
 		    		{
@@ -1389,26 +1445,34 @@ h1 {
 		    					  {
 		    					  		if ($('#' + ID).val() != '') subcomponent_array.push(  $('#' + ID).val()  );
 		    					  }
-		    				  }	
-		    				
-		    				//Add the new MultipleChoiceMulti to the Question_Array of the Campaign
-		    				var temp = new MultipleChoiceMulti(quesID, quesType, quesLabel, subcomponent_array);
-		    				Question_Array.push(temp);
-		    				
-		    				ID_of_edited_question = '';
-		    				
-		    				//reset text fields
-		    				$('.MultipleChoiceMulti_input').val('');
-		    				$(".subcomponent_MultipleChoiceMulti").remove()  ;
-		    				
-		    				//hide the form
-		    				$('#MultipleChoiceMulti_Form').hide();	
-		    				
-		    				//reset the variable that counts the subcomponent
-		    				subcomponent_count = 0;
-		    				resetCommonFormEdit();			
-
-		    			
+		    				  }
+							
+							var numberSubcomponent = subcomponent_array.length;
+							console.log('Number of subcomponent is ' + numberSubcomponent);
+								  
+							 if (numberSubcomponent <=1) //Not enough subcomponent
+								{
+									alert('Please make at least 2 options');									
+								}
+							 else
+							 {
+								//Add the new MultipleChoiceMulti to the Question_Array of the Campaign
+								var temp = new MultipleChoiceMulti(quesID, quesType, quesLabel, subcomponent_array);
+								Question_Array.push(temp);
+								
+								ID_of_edited_question = '';
+								
+								//reset text fields
+								$('.MultipleChoiceMulti_input').val('');
+								$(".subcomponent_MultipleChoiceMulti").remove()  ;
+								
+								//hide the form
+								$('#MultipleChoiceMulti_Form').hide();	
+								
+								//reset the variable that counts the subcomponent
+								subcomponent_count = 0;
+								resetCommonFormEdit();
+							 }
 		    		}
 		    	
 		    });
@@ -1715,9 +1779,7 @@ h1 {
 							
 							addTransition(nodeSequence);	
 							checkFirstQuestion(nodeSequence, quesID);
-						}
-						
-		    									
+						}	    									
 		    		}
 		    	
 		    	//A ContRange is being edited, 
@@ -1757,8 +1819,7 @@ h1 {
 							//hide the form
 							$('#ContRange_Form').hide();
 							resetCommonFormEdit();	
-						}
-		    							    			
+						}		    							    			
 		    		}		    	
 		    	
 		    });
@@ -1842,11 +1903,34 @@ h1 {
 		    	
 		    });
 		    
+			function addDestinationDropdownMenu (nodeSequence, div)
+			{
+				var destinationList = $('<select class="addedDropdownMenu" id="destinationSelect_ConditionalTransition" />');
+				$('<option />', {value: "value", text: ' '} ).appendTo(destinationList);
+
+				for(var i = 0;i < nodeSequence.length;i++) 
+				{
+					$('<option />', {value: nodeSequence[i], text: nodeSequence[i]} ).appendTo(destinationList);
+				}
+				$('<p class="addedDropdownMenu" id="selectDestinationText">Then select in this list the <b>destination</b> task</p>').appendTo(div);
+				destinationList.appendTo(div);				
+			}
+			
+			function removeDropdownMenu()
+			{
+				$('#destinationSelect_ConditionalTransition').remove();
+				$('#selectDestinationText').remove();
+				$('.addedDropdownMenu').remove();				
+				
+			}
+			
 		  //----------------------------------Question Transition - DEFAULT
 		    $('#default_tran').on('click', function(e) {
 		    	
 		    	$('.question').hide();
 		    	$('.quesTrans').hide();
+				
+				$('#default_transition_Cancel').click();				
 				
 				var originList = $('<select id="originSelect" />');
 				$('<option />', {value: "value", text: ' '} ).appendTo(originList);
@@ -1938,7 +2022,92 @@ h1 {
 
 		    	$('#conditional_transition').show();
 		    	$("#display_hide").hide();
+				
+				$('.hideInitially').hide();
+				
+				//var originList = $('<select id="originSelect_ConditionalTransition" />');
+				//$('<option />', {value: "value", text: ' '} ).appendTo(originList);
+				
+				//$('#originSelect_ConditionalTransition').selectUtils('setEmpty');				
+
+				$('option', '#originSelect_ConditionalTransition').remove();
+				
+				$('<option />', {value: "", text: ' '} ).appendTo('#originSelect_ConditionalTransition');
+				
+				for(var i = 0;i < nodeSequence.length;i++) 
+				{
+					$('<option />', {value: nodeSequence[i], text: nodeSequence[i]} ).appendTo('#originSelect_ConditionalTransition');
+				}
+				//originList.prependTo('#conditional_transition_form');
+				//$('<p>Select in this list the <b>origin</b> question</p>').prependTo('#conditional_transition_form');				
+				//$('<br><br>').appendTo('#default_transition_form');
 		    });
+			
+			$('#originSelect_ConditionalTransition').on('change', function() {
+			
+				$('.hideInitially').hide();
+			
+				var origin = this.value;
+				console.log('You have selected ' + origin);	
+
+				var quesType;
+				for (var i=0;i< Question_Array.length;i++)
+				{
+					if (Question_Array[i].getID() == origin)
+						{
+							quesType = Question_Array[i].getType();
+							console.log('The origin question is of type ' + quesType);
+							
+							if ( (quesType == FreeNumericSingle_const) || (quesType == ContRange_const) )
+								{
+									
+									$('#compareNumericValueDiv').show();
+									
+									addDestinationDropdownMenu (nodeSequence, $('#compareNumericValueDiv'));
+								}
+							else if ( quesType == MultipleChoiceSingle_const )
+								{
+									var availableOption = $('<select id="availableOptionList" class="addedDropdownMenu" />');
+									$('<option />', {value: "value", text: ' '} ).appendTo(availableOption);
+									
+									for (var j=0;j<Question_Array[i].getSubcomponent().length;j++ )
+									{
+										var textValue = Question_Array[i].getSubcomponent()[j];
+										console.log(textValue);
+										$('<option />', {value: textValue, text: textValue} ).appendTo(availableOption);
+									}
+									availableOption.appendTo('#compareStringValueDiv');									
+									
+									$('#compareStringValueDiv').show();
+									
+									addDestinationDropdownMenu (nodeSequence, $('#compareStringValueDiv'));
+								}
+							else if ( quesType == MultipleChoiceMulti_const )
+								{								
+									$('#allAnswer_MultipleChoiceMulti').show();
+									
+									for (var j=0;j<Question_Array[i].getSubcomponent().length;j++ )
+									{
+										var textValue = Question_Array[i].getSubcomponent()[j];
+										console.log(textValue);
+										
+										$('<br class="addedDropdownMenu"><input type="checkbox" class="addedDropdownMenu" name="AvailableOptions" value="'+ textValue + '" id="option_' +j + '">').appendTo('#allAnswer_MultipleChoiceMulti');
+										$('<label class="addedDropdownMenu" for="option_' + j + '">' + textValue + '</label>').appendTo('#allAnswer_MultipleChoiceMulti');								
+									}
+									
+									addDestinationDropdownMenu (nodeSequence, $('#allAnswer_MultipleChoiceMulti'));											
+								}
+							else
+							{
+								$('<p class="addedDropdownMenu"> Conditional link is not available for this task </p>').appendTo('#conditional_transition_form');
+							}
+							
+							
+						}				
+				}
+				
+			});		
+			
 
 		    $('#conditional_transition_Cancel').on('click', function(e) {		
 		    	
@@ -1953,18 +2122,128 @@ h1 {
 				$('#count_0').css('display', 'none');
 		    	
 		    	$("#display_hide").show();
-		    	 
+				
+				removeDropdownMenu();		    	 
 		    });
 
 		    $('#conditional_transition_OK').on('click', function(e) {
-		    	var origin      = $('#conditional_tran_origin').val().toUpperCase();
-		    	var destination = $('#conditional_tran_destination').val().toUpperCase();
-		    	//var expression  = $('#conditional_tran_expression').val();
+		    	var origin      = $('#originSelect_ConditionalTransition').val().toUpperCase();
+		    	
+				//var destination = $('#destinationSelect_ConditionalTransition').val().toUpperCase();		
+		    	
+				var expression = '';
 				
-				var expression;
-				var primitive = $('input[name=primitive]:checked').val();
-				//alert(primitive);
-				
+				var quesType;
+				for (var i=0;i< Question_Array.length;i++)
+				{
+					if (Question_Array[i].getID() == origin)
+					{
+						quesType = Question_Array[i].getType();
+						console.log('For this condition, the origin question is of type ' + quesType);
+						
+						if (!( (quesType == FreeNumericSingle_const) || (quesType == ContRange_const) || (quesType == MultipleChoiceSingle_const) || (quesType == MultipleChoiceMulti_const) ))
+						{
+							console.log('Conditional link not available');
+							$('#conditional_transition_Cancel').click();
+						}
+						else
+						{
+							var allParameterCorrect = true;
+							var destination = $('#destinationSelect_ConditionalTransition').val().toUpperCase();
+							console.log('Origin is ' + origin + ' and destination is ' + destination);
+							
+							if ( (quesType == FreeNumericSingle_const) || (quesType == ContRange_const) )
+								{
+									if ( isNaN($('#threshold_0').val()) )
+									{
+										alert('please type a correct number');
+										allParameterCorrect = false;
+									}
+									expression = origin + '.value' + ' ' + $('#numericOperand :selected').val() + ' ' + $('#threshold_0').val();
+								}
+							else if ( quesType == MultipleChoiceSingle_const )
+								{
+									expression = origin + '.value' + ' ' + $('#stringOperand :selected').val() + ' ' + '\'' + $('#availableOptionList option:selected').val() + '\'';								
+								}
+							else if ( quesType == MultipleChoiceMulti_const )
+								{	
+									var selectedOption = [];
+									
+									$('input[name="AvailableOptions"]:checked').each(function() {
+									
+									   selectedOption.push(this.value); 
+									});
+									
+									console.log('Value of selectedOption is ' + JSON.stringify(selectedOption));
+									/*
+									if (selectedOption.length == 0)
+									{
+										alert('PLease choose at least one option');
+										allParameterCorrect = false;
+									}*/
+									
+									/*else*/ // Everything is good here
+									{
+										if (selectedOption.length == 0)
+										{
+											expression = origin + '.count == 0';
+										}
+										
+										else if (selectedOption.length == 1) //  origin.values.indexOf('selectedOption') > -1
+										{
+											expression = origin + '.values.indexOf' + '(\'' +  selectedOption[0] + '\')' + ' > -1';	    												
+										}
+										else
+										{
+											for (var t=0;t < selectedOption.length-1;t++)
+											{
+												expression += '(' + origin + '.values.indexOf' + '(\'' +  selectedOption[t] + '\')' + ' > -1' + ')' + '&&'; 
+											}
+											
+											expression += '(' + origin + '.values.indexOf' + '(\'' +  selectedOption[selectedOption.length-1] + '\')' + ' > -1' + ')'; 
+										}									
+									}																
+								}						
+							//alert(expression);
+							if ( allParameterCorrect == true )
+							{
+								console.log('add a new edge');
+								console.log( $('#combo :selected').text() );
+								
+								cy.add({
+									group: "edges",
+									data: { id: origin + '-' + destination, source: origin, target: destination }
+								});
+								
+								var tempBranch = new Branch(expression,destination);
+								
+								var i;
+								for (i=0;i<Campaign_Workflow.length;i++)
+									{
+										if (Campaign_Workflow[i].getQuesID() == origin) 
+											{
+												console.log(origin + ' is duplicated');
+												Campaign_Workflow[i].getCondition().push(tempBranch);			 			
+											}
+									}
+								
+								//reset text fields
+								$('.conditional_tran').val('');
+								//hide the div
+								$('#conditional_transition').hide();
+								
+								$('input[name="primitive"]').prop('checked', false);
+								$('#value_0').css('display', 'none');
+								$('#values_0').css('display', 'none');
+								$('#count_0').css('display', 'none');
+								
+								removeDropdownMenu();	
+							}
+						}
+					}
+				}
+				/*
+				var primitive = $('input[name=primitive]:checked').val();				
 				if (primitive == 'value')
 					{
 						expression = origin + '.' + primitive + ' ' + $('#stringOperand :selected').val() + ' ' + '\'' + $('#value_parameter_0').val() + '\'';
@@ -1977,7 +2256,9 @@ h1 {
 					{
 						expression = origin + '.' + primitive + ' ' + $('#numericOperand :selected').val() + ' ' + $('#count_parameter_0').val();
 					}
+					*/
 	    
+		/*
 				alert(expression);
 		    			    		    	
 		    	console.log('add a new edge');
@@ -2010,7 +2291,8 @@ h1 {
 				$('#values_0').css('display', 'none');
 				$('#count_0').css('display', 'none');
 				
-				$("#display_hide").show();		
+				$("#display_hide").show();
+					*/
 		    });
 		    
 		    $(document).on('mouseenter', '.hover_action', function () {
@@ -2151,6 +2433,9 @@ h1 {
 		    		
 		    		//remove subcomponent from question form
 		    		$('.subcomponent').remove();
+					
+					resetCommonFormEdit();
+					resetCommonForm();	
 		    	
 		    });
 		  
@@ -2200,9 +2485,19 @@ h1 {
 		    			//alert('userID is ' + userID);
 		    			console.log('Campaign ID is ' + Campaign_ID);
 		    			console.log('UserID is ' + userID);
+						console.log('Incentive list is ' + JSON.stringify(incentiveList));
+						
+						var campaignCode;
+						if (incentiveList.length > 0)
+						{
+							console.log('Print ' + incentiveList[0]);
+							campaignCode = parseInt( incentiveList[0].typeNumber );
+							console.log('The campaign code is ' + campaignCode);
+						}
+						else campaignCode = 100;
 		    			var cam = new Campaign(Campaign_ID, Campaign_Description, onetimeValue, expiry, start_date, end_date, geoBoolean, 
-								Area_List, Area_List_WebMercator, StartQues, Question_Array, Campaign_Workflow,  userID, cy.json(), extrinsicBooleanValue, incentiveList, incentiveContact, showResult);
-		    			console.log( JSON.stringify(cam) );
+								Area_List, Area_List_WebMercator, StartQues, Question_Array, Campaign_Workflow,  userID, cy.json(), (extrinsicBooleanValue == 'true')? true:false, incentiveList, incentiveContact, showResult, campaignCode);
+		    			console.log( JSON.stringify(cam) );					
 		    			
 		    			console.log("cy.json() produces " + JSON.stringify(cy.json()));
 		    		
@@ -2226,26 +2521,6 @@ h1 {
 		    	                   
 		    	                }
 		    	             ); 
-		    			
-		    			/*
-		    			sessionStorage.CamID_Session                 = null;
-						sessionStorage.CamDescription_Session        = null;
-						sessionStorage.onetimeBoolean_Session        = null;
-						sessionStorage.expiryBoolean_Session         = null;
-						sessionStorage.startDate_Session             = null;
-						sessionStorage.endDate_Session               = null;
-						sessionStorage.AreaOfInterestBoolean_Session = null;
-						sessionStorage.AreaOfInterest_Session        = null;
-						sessionStorage.WebMercator_Session           = null;
-						*/
-		    			
-		    			/*
-		    			$('<a href="" id="link" download="' + Campaign_ID + '.txt"> Download Campaign file </a> ').appendTo('#quesType');
-		    			document.getElementById('link').onclick = function(code) {
-		    		        this.href = 'data:text/plain;charset=utf-8,'
-		    		          + encodeURIComponent(JSON.stringify(cam));
-		    		      };      */
-		    		      
 		    		}			    		
 		    	});
 		  
@@ -2421,7 +2696,7 @@ h1 {
 											console.log('NodeSequence is ' + JSON.stringify(nodeSequence));
 											$('#ContRange_Cancel').trigger(e.type);
 			    				    		
-		    				      			break;	   
+		    				      			break;
 
 										case UploadPhoto_const:
 		    				      			
@@ -2492,46 +2767,50 @@ h1 {
 
 <div id="help_window" title="Hello  World!"><p><font face="Georgia" size="4">
 	Instruction for this step</font></p>
+	
+	A video tutorial can be found here: https://www.youtube.com/watch?v=3AxY0GWrzKY
 </div> 
 
   
 
       <div id="questionTypeLeft" class="col-sm-2">
 	  <br>
-	  <!-- graph : start -->
+	  
         <div class="panel panel-primary">
-          <div class="panel-heading" style="background-color: #4c8dc7;">Step 1: Create new questions</div>	  
+          <div class="panel-heading" style="background-color: #4c8dc7;">Step 1: Create new tasks</div>	  
 		  
           <div class="panel-body">
             
             <select id='listQuestionType' style="width: 100% !important; min-width: 100%; max-width: 100%;">
 			<option value="-1">Select a question</option>
-			<option value="0">Question with 1 text answer</option>
-			<option value="1">Question with multiple text answers</option>
-			<option value="2">MultipleChoice with single answer</option>
-			<option value="3">MultipleChoice with multiple answers</option>
-			<option value="4">Text Display</option>
+			<option value="0">Type1 - Question with 1 text answer</option>
+			<option value="1">Type2 - Question with multiple text answers</option>
+			<option value="2">Type3 - MultipleChoice with single answer</option>
+			<option value="3">Type4 - MultipleChoice with multiple answers</option>
+			<option value="4">Type5 - Text Display</option>
 			<!-- <option value="5">Audio Sensor</option> -->
-			<option value="6">Question with 1 numeric answer</option>
-			<option value="7">Number Range</option>
-			<option value="8">Upload Photo</option>
+			<option value="6">Type7 - Question with 1 numeric answer</option>
+			<option value="7">Type8 - Number Range</option>
+			<option value="8">Type9 - Upload Photo</option>
 			
 			</select>           
           </div>         
         </div>
-        <!-- graph : end -->   
+        
 		
-		<!-- graph : start -->
+		
         <div class="panel panel-primary">
-          <div class="panel-heading" style="background-color: #4c8dc7;">Step 2. Update links among questions (optional)</div>	  
+          <div class="panel-heading" style="background-color: #4c8dc7;">Step 2. Update links among tasks (optional)</div>	  
 		  
           <div class="panel-body">
 		  
 		  <button id = "default_tran"     class="btn btn-primary  btn-block button_custom_color active" style="white-space:normal;" > Default link </button>            
+		  
+		  <button id = "conditional_tran"     class="btn btn-primary  btn-block button_custom_color active" style="white-space:normal;" > Conditional link </button>            
                       
           </div>         
         </div>
-        <!-- graph : end -->  
+        
 		
 		
 		
@@ -2592,7 +2871,7 @@ h1 {
 			  
 			  <button id="removePic" class="btn btn-warning" >Remove this picture</button> 		
 			  <br><br>
-			  You can attach a new photo for this question (optional)
+			  <p id="photo_attach_text_edit"> You can attach a photo for this question (optional) </p>
 			  <br>
 			  <form id="uploadFormEdit" action="upload_ajax.php" method="post" enctype="multipart/form-data" target="upload_target" >
                      <!-- <p id="f1_upload_process">Loading...<br/><img src="loader.gif" /><br/></p> -->
@@ -2695,7 +2974,7 @@ h1 {
 			<button id = "UploadPhoto_Save"    class="btn btn-success">  Save this Question</font>  </button>  
 			<button id = "UploadPhoto_Cancel"  class="btn btn-warning">  Cancel</font> </button>
 			
-			</div>
+			</div>			
 			
 			<!-- Default Transition form -->
 			<div id="default_transition"            class = "begin_step2 quesTrans edit_form">
@@ -2716,14 +2995,20 @@ h1 {
 			
 			<!-- Conditional Transition form -->
 			<div id="conditional_transition"        class = "begin_step2 quesTrans edit_form">
-			<br><br>  
-			<form id="conditional_transition_form"  action="">
-			Please type the ID of the origin and destination question
+			<br><br> 
 			
+			Please select the ID of the <b>origin</b> task
 			<br>
-			Origin question:        <br>  <input type="text" class = "conditional_tran form-control" id="conditional_tran_origin"><br>
-			<!-- The logical expression  <br>  <input type="text" class = "conditional_tran form-control" id="conditional_tran_expression"><br> -->
+			<select id='originSelect_ConditionalTransition' style="width: 100% !important; min-width: 100%; max-width: 100%;">
+			<option value=""></option>
 			
+			
+			</select> 
+			
+			<form id="conditional_transition_form"  action="">		
+			
+			
+			<!--
 			<form id="conditional">
 				<input id='' name='primitive' type='radio' value="value" />the only answer
 				<br />
@@ -2732,8 +3017,10 @@ h1 {
 				<input id='' name='primitive' type='radio' value="count" />the number of answer
 			</form>
 			<br>
+			-->
 
 				<!-- The parameter of primitive VALUE -->
+				<!--
 				<div id='value_0' style='display:none'>
 					<select id="stringOperand">  
 						  <option value="==">is</option>
@@ -2742,14 +3029,18 @@ h1 {
 					</select>
 					<input type="textbox" id="value_parameter_0">
 				</div>
+				-->
 
 				<!-- The parameter of primitive VALUES -->
+				<!--
 				<div id='values_0' style='display:none'>
 					contains 
 					<input type="textbox" id="values_parameter_0">
 				</div>
+				-->
 
 				<!-- The parameter of primitive COUNT -->
+				<!--
 				<div id='count_0' style='display:none'>
 
 					<select id="numericOperand">  
@@ -2761,12 +3052,50 @@ h1 {
 					<input type="textbox" id="count_parameter_0">
 					
 				</div>
+				-->
+				
+				
+				<div id='compareNumericValueDiv' class='hideInitially'>
+				<br>
+					If numeric value
+					<select id="numericOperand">  
+						  <option value=">">></option>
+						  <option value=">=">>=</option>
+						  <option value="==">=</option>	
+						  <option value="<"><</option>
+						  <option value="<="><=</option>						  
+					</select>					
+					<input type="textbox" id="threshold_0">					
+					<br>
+					
+				
+				</div>
+				
+				<div id='compareStringValueDiv' class='hideInitially'>
+				<br>
+					 If text value
+					<select id="stringOperand">  
+						  <option value="==">is</option>
+						  <option value="!=">is not</option>
+							  
+					</select>	
+					
+				</div>
+				
+				<div id='allAnswer_MultipleChoiceMulti' class='hideInitially'>
+				<br>
+					 If participant selects
+					 <br>						
+					
+				</div>		
+				
 			
 			<br>
-			Destination Question:   <br>  <input type="text" class = "conditional_tran form-control" id="conditional_tran_destination"><br> 
+			
 			
 			</form>
-			
+			<br>Remember to cover all possible cases
+			<br>
 			<button id = "conditional_transition_OK"    class="btn btn-success">  OK   </button>  
 			<button id = "conditional_transition_Cancel"  class="btn btn-warning" style="white-space:normal;">  Cancel</button>
 			</div>
@@ -2791,7 +3120,7 @@ h1 {
           </div>          
           
         <button id = "new_selectStart" class="btn" data-toggle="Start-tooltip" title="Click on the question to select and click this button to make it the starting point of the campaign" >  Select initial question   </button>
-        <button id = "copyQues" class="btn btn-primary" data-toggle="Duplicate-tooltip" title="Click on the question to select and click this Duplicate button to duplicate selected item" > Duplicate question </button>
+        <button id = "copyQues" class="btn btn-primary" data-toggle="Duplicate-tooltip" title="Click on the question to select and click this Duplicate button to duplicate selected item" > Duplicate task </button>
 		<button id = "new_delete" class="btn btn-danger" data-toggle="Delete-tooltip" title="Click on the item (question or transition) to select and click this Detele button to delete selected item" > <span class="glyphicon glyphicon-remove-sign"></span> Delete </button>
         </div>
         <!-- graph : end -->

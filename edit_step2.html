@@ -57,6 +57,7 @@
 		const AudioSensor_const = 'AudioSensor';
 		const TextDisplay_const = 'TextDisplay';
 		const FreeNumericSingle_const        = 'FreeNumericSingle';
+		const UploadPhoto_const			 	='UploadPhoto';
 		
 		console.log('Load ID is: ' + sessionStorage.CamID_Session);
 		console.log('Load Description is: ' + sessionStorage.CamDescription_Session);
@@ -67,22 +68,38 @@
 		console.log('Load AreaOfInterest_Boolean: ' + sessionStorage.AreaOfInterestBoolean_Session);
 		console.log('Load AreaOfInterest_Geography_list: ' + sessionStorage.AreaOfInterest_Session);
 		console.log('Load AreaOfInterest_WebMecartor_List: ' + sessionStorage.WebMercator_Session);
+		console.log('Load showResultBoolean: ' + sessionStorage.showResultBoolean);
 
 		
 		var config = JSON.parse(sessionStorage.campaign);
 		console.log('Campaign config is ' + JSON.stringify(config));
 		
 		var Campaign_ID               = config.Campaign_ID;
-		var Campaign_Description      = config.Campaign_Description;
-		var onetimeValue              = config.onetime;
-		var expiry                    = config.expiry;
-		var start_date                = config.startDate;
-		var end_date                  = config.endDate;
+		var Campaign_Description      = sessionStorage.CamDescription_Session;
+		var onetimeValue              = sessionStorage.onetimeBoolean_Session;
+		var expiry                    = sessionStorage.expiryBoolean_Session;
+		var start_date                = sessionStorage.startDate_Session;
+		var end_date                  = sessionStorage.endDate_Session;
 		var StartQues                 = config.startQuestion;
 		var Question_Array = [];
 		var Campaign_Workflow = [];
-		var geoBoolean                = config.geoBoolean;
-		var PoI = [];
+		var geoBoolean                = sessionStorage.AreaOfInterestBoolean_Session;
+		console.log('geoBoolean is ' + geoBoolean);
+		
+		var GPS_List = [];
+		var Mercator_List = [];
+		
+		if (geoBoolean == 'true')
+		{
+			console.log('We will continue here');
+			GPS_List = JSON.parse(sessionStorage.AreaOfInterest_Session);
+			Mercator_List = JSON.parse(sessionStorage.WebMercator_Session);
+			console.log('Length of GPS_List is ' + GPS_List.length + ' and Mercator_List is ' + Mercator_List.length);				  
+		}
+		
+		
+		var showResultBooleanValue	  = sessionStorage.showResultBoolean;
+		
 		var question_number = 1;
 		var subcomponent_count = 0;
 		var geo_component = 0;	
@@ -117,57 +134,72 @@
 		{
 			if (config.Question_Array[i].quesType == FreeTextSingle_const)
 				{
-				var FreeTextSingle_obj         = new FreeTextSingle('','',[]);
+					var FreeTextSingle_obj         = new FreeTextSingle('','',[]);
 					FreeTextSingle_obj.deserialize(config.Question_Array[i]);
 					Question_Array.push(FreeTextSingle_obj);
+					nodeSequence.push(FreeTextSingle_obj.getID());
 				}
 			else if (config.Question_Array[i].quesType == FreeTextMulti_const)
 			{
 				var FreeTextMulti_obj          = new FreeTextMulti('','',[],[]);
 				FreeTextMulti_obj.deserialize(config.Question_Array[i]);
 				Question_Array.push(FreeTextMulti_obj);
+				nodeSequence.push(FreeTextMulti_obj.getID());
 			}
 			else if (config.Question_Array[i].quesType == MultipleChoiceSingle_const)
 			{
 				var MultipleChoiceSingle_obj   = new MultipleChoiceSingle('','',[],[]);
 				MultipleChoiceSingle_obj.deserialize(config.Question_Array[i]);
 				Question_Array.push(MultipleChoiceSingle_obj);
+				nodeSequence.push(MultipleChoiceSingle_obj.getID());
 			}
 			else if (config.Question_Array[i].quesType == MultipleChoiceMulti_const)
 			{
 				var MultipleChoiceMulti_obj    = new MultipleChoiceMulti('','',[],[]);
 				MultipleChoiceMulti_obj.deserialize(config.Question_Array[i]);
 				Question_Array.push(MultipleChoiceMulti_obj);
+				nodeSequence.push(MultipleChoiceMulti_obj.getID());
 			}
 			else if (config.Question_Array[i].quesType == AudioSensor_const)
 			{
 				var AudioSensor_obj            = new AudioSensor('','',[]);
 				AudioSensor_obj.deserialize(config.Question_Array[i]);
 				Question_Array.push(AudioSensor_obj);
+				nodeSequence.push(AudioSensor_obj.getID());
 			}
 			else if (config.Question_Array[i].quesType == TextDisplay_const)
 			{
 				var TextDisplay_obj            = new TextDisplay('','',[]);
 				TextDisplay_obj.deserialize(config.Question_Array[i]);
-				Question_Array.push(TextDisplay_obj);				
+				Question_Array.push(TextDisplay_obj);	
+				nodeSequence.push(TextDisplay_obj.getID());
 			}
 			else if (config.Question_Array[i].quesType == FreeNumericSingle_const)
 			{
 				var FreeNumericSingle_obj            = new FreeNumericSingle('','',[]);
 				FreeNumericSingle_obj.deserialize(config.Question_Array[i]);
-				Question_Array.push(FreeNumericSingle_obj);				
+				Question_Array.push(FreeNumericSingle_obj);		
+				nodeSequence.push(FreeNumericSingle_obj.getID());
 			}
 			else if (config.Question_Array[i].quesType == ContRange_const)
 			{
 				var ContRange_obj            = new ContRange('','',[],[]);
 				ContRange_obj.deserialize(config.Question_Array[i]);
-				Question_Array.push(ContRange_obj);				
+				Question_Array.push(ContRange_obj);	
+				nodeSequence.push(ContRange_obj.getID());
 			}
-			
+			else if (config.Question_Array[i].quesType == UploadPhoto_const)
+			{
+				var UploadPhoto_obj			= new UploadPhoto('','',[],[]);
+				UploadPhoto_obj.deserialize(config.Question_Array[i]);
+				Question_Array.push(UploadPhoto_obj);	
+				nodeSequence.push(UploadPhoto_obj.getID());
+			}			
 			
 		}
 		console.log('Size of the questionArray is ' + Question_Array.length);
-	console.log('Content of the questionArray is ' + JSON.stringify(Question_Array));
+		console.log('Content of the questionArray is ' + JSON.stringify(Question_Array));
+		console.log('The nodeSequence is ' + JSON.stringify(nodeSequence));
 		
 		var flow_obj = config.workflow;
 		
@@ -192,10 +224,10 @@
 		console.log(JSON.stringify(Campaign_Workflow));
 		
 		//-----------------------------------------
-		var list_PoI = config.PoI_list;				
+		var list_PoI = sessionStorage.AreaOfInterest_Session;				
 		console.log('Size of campaign PoI_list is ' + list_PoI.length);
 		
-		var list_PoI_WebMercator = config.PoI_list_WebMercator;
+		var list_PoI_WebMercator = sessionStorage.WebMercator_Session;
 		console.log('Size of the PoI_list_webMercator is ' + list_PoI_WebMercator.length);
 		
 		console.log('----------------FInal check-----------------');
@@ -203,8 +235,9 @@
 		console.log(config.userID);
 		console.log(JSON.stringify(Question_Array));
 		console.log(JSON.stringify(Campaign_Workflow));
-		console.log(JSON.stringify(list_PoI));
-		console.log(JSON.stringify(list_PoI_WebMercator));
+		console.log(list_PoI);
+		console.log(list_PoI_WebMercator);
+		console.log(showResultBooleanValue);
 		
 		// Show/hide the parameter of the conditional transition
 		$("input[name='primitive']").click(function () {
@@ -343,8 +376,111 @@
 	      $('#' + sourceName).remove();
 	  	  
 	    });
+		
+	//-------------------------------------------------------Hover on EDGE
+		cy.on('mousemove','edge', function(event)
+		{
+				  var edge = event.cyTarget;
+				  console.log( 'edge ' + edge.id() );				  
+				  
+				  var this_edge = cy.$('#' + edge.id());
+				  var source = this_edge.source();
+				  var target = this_edge.target();
+				  
+				  var expression = '';
+				  
+				  for (var i=0;i< Campaign_Workflow.length;i++)
+				  {				
+					if (Campaign_Workflow[i].getQuesID() == source.id())
+						{							
+							for (var j=0;j< Campaign_Workflow[i].getCondition().length;j++)
+							{
+								console.log('aaa');
+								if ( Campaign_Workflow[i].getCondition()[j].getNext() == target.id() )
+								{
+									console.log( Campaign_Workflow[i].getCondition()[j].getExpression() );
+									expression = Campaign_Workflow[i].getCondition()[j].getExpression();
+								}
+							}
+						}
+				  }
+				  
+				  $('.hoverOnEdge').remove();
+				  $('<div id="' +edge.id() +  '" class="hoverOnEdge"> This logical condition is: ' + expression + '</div>').appendTo("#cy");     	            
+		});
+		    cy.on('mouseout','edge', function(event)
+			{
+				var edge = event.cyTarget;
+				$('#' + edge.id()).remove();
+			
+				$('.hoverOnEdge').remove();
+				$('.hoverOnEdge').remove();
+		    });
+
 	    
 	    $('.begin_step2').hide();
+		
+		function drawImageScaled(img, ctx) 
+			{
+			   var canvas = ctx.canvas ;
+			   var hRatio = canvas.width  / img.width    ;
+			   var vRatio =  canvas.height / img.height  ;
+			   var ratio  = Math.min ( hRatio, vRatio );
+			   var centerShift_x = ( canvas.width - img.width*ratio ) / 2;
+			   var centerShift_y = ( canvas.height - img.height*ratio ) / 2;  
+			   ctx.clearRect(0,0,canvas.width, canvas.height);
+			   ctx.drawImage(img, 0,0, img.width, img.height, centerShift_x,centerShift_y,img.width*ratio, img.height*ratio);  
+			}
+			
+		function drawImageWhenCreateQues(imageSrc)
+		{
+			console.log('Full image link is ' + imageSrc);
+			var localImage = imageSrc.substring( imageSrc.lastIndexOf('\\')+1 ,imageSrc.length);
+			console.log('Local image link is ' + localImage);
+			var canvas=document.getElementById('myCanvasCreateQues');
+			$('#myCanvasCreateQues').show();
+			var ctx= canvas.getContext('2d');
+																	
+			var img = new Image();
+			img.onload= drawImageScaled.bind(null, img, ctx);
+															
+			img.src = 'Pic/' + imageSrc;			
+		}
+			
+		function drawImageOnMyCanvas(imageSrc)
+		{
+			console.log('Full image link is ' + imageSrc);
+			var localImage = imageSrc.substring( imageSrc.lastIndexOf('/')+1 ,imageSrc.length);
+			console.log('Local image link is ' + localImage);
+			var canvas=document.getElementById('myCanvas');
+			$('#myCanvas').show();
+			var ctx= canvas.getContext('2d');
+																	
+			var img = new Image();
+			img.onload= drawImageScaled.bind(null, img, ctx);
+															
+			img.src = 'Pic/' + localImage;			
+		}
+		
+		function drawBlankImage()
+		{
+			var canvas=document.getElementById('myCanvas');
+			var ctx= canvas.getContext('2d');			
+			ctx.clearRect(0, 0, canvas.width, canvas.height);
+			
+			canvas=document.getElementById('myCanvasCreateQues');
+			ctx= canvas.getContext('2d');
+			ctx.clearRect(0, 0, canvas.width, canvas.height);		
+			
+			$('#myCanvas').hide();
+			$('#myCanvasCreateQues').hide();
+			
+			/*														
+			var img = new Image();
+			img.onload= drawImageScaled.bind(null, img, ctx);
+															
+			img.src = '';*/		
+		}
 	    
 	  //-----------------------------------------------Click on NODE
 		cy.on('click', 'node', { foo: 'bar' }, function(evt){
@@ -380,6 +516,10 @@
 				  	$('#commonEdit_QuesText').val(  question.getLabel()[0]   );
 				  	$('#commonEdit_QuesPicURL').val( question.getLabel()[1]   );
 				  	if ( question.getLabel()[1] == '' ) $('#removePic').hide();
+					else
+						{
+							drawImageOnMyCanvas(question.getLabel()[1]);
+						}
 				  	
 				  }
 			  else if (question.getType() == FreeTextMulti_const)
@@ -395,8 +535,11 @@
 					
 					$('#commonEdit_QuesText').val(  question.getLabel()[0]   );
 					$('#commonEdit_QuesPicURL').val( question.getLabel()[1]   );
-					if ( question.getLabel()[1] == '' ) $('#removePic').hide();	  	
-				  	
+					if ( question.getLabel()[1] == '' ) $('#removePic').hide();
+					else
+						{
+							drawImageOnMyCanvas(question.getLabel()[1]);
+						}									  	
 				  	
 				  	for (var i=0;i< size;i++)
 				  		{
@@ -441,7 +584,11 @@
 					  	
 					$('#commonEdit_QuesText').val(  question.getLabel()[0]   );
 					$('#commonEdit_QuesPicURL').val( question.getLabel()[1]   );
-					if ( question.getLabel()[1] == '' ) $('#removePic').hide();		
+					if ( question.getLabel()[1] == '' ) $('#removePic').hide();	
+					else
+						{
+							drawImageOnMyCanvas(question.getLabel()[1]);
+						}					
 				  	
 				  	
 				  	for (var i=0;i< size;i++)
@@ -450,7 +597,7 @@
 							$('<div id="' + ID_of_edited_question + '_subcomponent_div' + i + '" class = "subcomponent_MultipleChoiceSingle hover_action subcomponent" </div>').appendTo("#commonDivEdit");
 						
 							//Add text "Sub-Component" to the newly-created div
-							$('<p id ="' + ID_of_edited_question + '_subcomponent_text_' + i + '" class = "subcomponent_MultipleChoiceSingle">').text('Sub-Component').appendTo("#" + ID_of_edited_question + '_subcomponent_div' + i);
+							$('<p id ="' + ID_of_edited_question + '_subcomponent_text_' + i + '" class = "subcomponent_MultipleChoiceSingle">').text('Option').appendTo("#" + ID_of_edited_question + '_subcomponent_div' + i);
 							
 							//Add textfield to the newly-created div
 							$('<input type="text" class = "subcomponent_MultipleChoiceSingle" id="' + ID_of_edited_question + '_subcomponent_' + i + '"></input>' ).appendTo("#" + ID_of_edited_question + '_subcomponent_div' + i);
@@ -486,7 +633,11 @@
 							  	
 							$('#commonEdit_QuesText').val(  question.getLabel()[0]   );
 							$('#commonEdit_QuesPicURL').val( question.getLabel()[1]   );
-							if ( question.getLabel()[1] == '' ) $('#removePic').hide();							  	
+							if ( question.getLabel()[1] == '' ) $('#removePic').hide();	
+							else
+							{
+								drawImageOnMyCanvas(question.getLabel()[1]);
+							}
 						  	
 						  	for (var i=0;i< size;i++)
 						  		{
@@ -524,6 +675,10 @@
 						  	$('#commonEdit_QuesText').val(  question.getLabel()[0]   );
 							$('#commonEdit_QuesPicURL').val( question.getLabel()[1]   );
 							if ( question.getLabel()[1] == '' ) $('#removePic').hide();
+							else
+							{
+								drawImageOnMyCanvas(question.getLabel()[1]);
+							}
 			 		}	
 			  else if (question.getType() == TextDisplay_const)
 			  {
@@ -532,18 +687,25 @@
 					  	
 					$('#commonEdit_QuesText').val(  question.getLabel()[0]   );
 					$('#commonEdit_QuesPicURL').val( question.getLabel()[1]   );
-					if ( question.getLabel()[1] == '' ) $('#removePic').hide();	  
+					if ( question.getLabel()[1] == '' ) $('#removePic').hide();	
+					else
+						{
+							drawImageOnMyCanvas(question.getLabel()[1]);
+						}					
 				  	
 			}
 			  else if (question.getType() == FreeNumericSingle_const)
 				  {
 				  	$('#commonDivEdit').show();
-					$('#FreeNumericSingle_Form').show();
-					
+					$('#FreeNumericSingle_Form').show();					
 					  	
 					$('#commonEdit_QuesText').val(  question.getLabel()[0]   );
 					$('#commonEdit_QuesPicURL').val( question.getLabel()[1]   );
-					if ( question.getLabel()[1] == '' ) $('#removePic').hide();	
+					if ( question.getLabel()[1] == '' ) $('#removePic').hide();
+					else
+						{
+							drawImageOnMyCanvas(question.getLabel()[1]);
+						}
 				  	
 				  }
 			  else if (question.getType() == ContRange_const)
@@ -553,10 +715,31 @@
 					  	
 					$('#commonEdit_QuesText').val(  question.getLabel()[0]   );
 					$('#commonEdit_QuesPicURL').val( question.getLabel()[1]   );
-					if ( question.getLabel()[1] == '' ) $('#removePic').hide();	  
+					if ( question.getLabel()[1] == '' ) $('#removePic').hide();	
+					else
+						{
+							drawImageOnMyCanvas(question.getLabel()[1]);
+						}
 					  	
 					$('#ContRange_min').val (question.getSubcomponent()[0]);
 					$('#ContRange_max').val (question.getSubcomponent()[1]);				  	
+				  }
+				 else if (question.getType() == UploadPhoto_const)
+				  {
+				  	$('#commonDivEdit').show();
+					$('#UploadPhoto_Form').show();					
+					  	
+					$('#commonEdit_QuesText').val(  question.getLabel()[0]   );
+					$('#commonEdit_QuesPicURL').val( question.getLabel()[1]   );
+					if ( question.getLabel()[1] == '' ) $('#removePic').hide();	
+					else
+						{
+							drawImageOnMyCanvas(question.getLabel()[1]);
+						}
+					
+					$('#uploadFormEdit').hide();
+					$('#uploadNewPic').hide();
+					$('#photo_attach_text_edit').hide();					  	
 				  }
 			  
 			  $('#selection').val(node.id());
@@ -583,12 +766,24 @@
 		    }
 			
 			$("#submitForm").click(function () {
-            var formData = new FormData($('#uploadForm')[0]);	
-				formData.append("userID",userID);
+		
+			var now = new Date();
+			var tail = '_' + now.getTime();
 			
-			selectedFile = cleaseText(document.getElementById('fileSelector').value);
+            var formData = new FormData($('#uploadForm')[0]);					
 			
-			console.log('Start uploading ' + selectedFile);
+			selectedFile = cleaseText(document.getElementById('fileSelector').value);		
+			
+			var originalFileNale = selectedFile;
+			console.log('Original fine name is ' + originalFileNale);
+			console.log('Tail is ' + tail);
+			var editedFileName = selectedFile.substring(0, selectedFile.lastIndexOf('.')) + tail + selectedFile.substring(selectedFile.lastIndexOf('.'), selectedFile.length);
+			console.log('Edited file name is ' + editedFileName);
+			selectedFile = editedFileName;
+
+			formData.append("finalName",editedFileName);			
+			
+			console.log('Start uploading ' + editedFileName);
 			
             $.ajax({
                 method: "POST",
@@ -597,6 +792,7 @@
                 success : function( res ) {
                     if(res=="OK"){
                         alert("Upload file " + selectedFile + " successful");
+						drawImageWhenCreateQues(editedFileName);
                     }else{
                         alert("Error when upload. Please try again !");
                     }
@@ -606,18 +802,30 @@
                 },
                 processData: false,
                 contentType: false,
-            });
-			
+            });			
         });
 		
 		$("#removePic").click(function () {  
-			$('#commonEdit_QuesPicURL').val(''); 					
+			$('#commonEdit_QuesPicURL').val(''); 	
+			drawBlankImage();	
+			$("#removePic").hide();
 		});	
 		
 		$("#uploadNewPic").click(function () {
+			var now = new Date();
+			var tail = '_' + now.getTime();
             var formData = new FormData($('#uploadFormEdit')[0]);			
 			
-			selectedFile = cleaseText(document.getElementById('fileSelector').value);
+			selectedFile = cleaseText(document.getElementById('fileSelectorEdit').value);
+			
+			var originalFileNale = selectedFile;
+			console.log('Original fine name is ' + originalFileNale);
+			console.log('Tail is ' + tail);
+			var editedFileName = selectedFile.substring(0, selectedFile.lastIndexOf('.')) + tail + selectedFile.substring(selectedFile.lastIndexOf('.'), selectedFile.length);
+			console.log('Edited file name is ' + editedFileName);
+			selectedFile = editedFileName;
+			
+			formData.append("finalName",editedFileName);		
 			
 			console.log('Start uploading ' + selectedFile);
 			
@@ -628,6 +836,7 @@
                 success : function( res ) {
                     if(res=="OK"){
                         alert("Upload file " + selectedFile + " successful");
+						drawImageOnMyCanvas(editedFileName);
                     }else{
                         alert("Error when upload. Please try again !");
                     }
@@ -650,11 +859,16 @@
 				$('#commonDiv').hide();
 				$('.addedText').remove();
 				
+				drawBlankImage();
+				
 				//Reset quesType dropdown menu
 				$('#listQuestionType').each(function() { this.selectedIndex = 0 });
 				$('#removePic').show();
 				
 				selectedFile = '';
+				$('#uploadForm').show();
+				$('#submitForm').show();
+				$('#photo_attach_text').show();
 		    }
 			
 		function resetCommonFormEdit()
@@ -666,11 +880,16 @@
 				$('#commonDivEdit').hide();
 				$('.addedText').remove();
 				
+				drawBlankImage();
+				
 				//Reset quesType dropdown menu
 				$('#listQuestionType').each(function() { this.selectedIndex = 0 });
 				$('#removePic').show();
 				
 				selectedFile = '';
+				$('#uploadForm').show();
+				$('#submitForm').show();
+				$('#photo_attach_text').show();
 		    }
 		
 		$('#listQuestionType').on('change', function() {
@@ -735,6 +954,19 @@
 	    	  $('#ContRange_Form').show();
 				
 	      }
+		  else if ( this.value == '8')
+	      {
+	    	  $('.begin_step2').hide();
+			  resetCommonForm();
+			  $('<p class="addedText"> This task asks participants to upload a photo (either already in their phone gallery or capture using the phone camera ) </p>').prependTo('#commonDiv');
+			  $('#commonDiv').show();
+	    	  $('#UploadPhoto_Form').show();
+			  $('#uploadForm').hide();
+			  $('#submitForm').hide();
+			  $('#photo_attach_text').hide();				
+	      }
+		  
+		  
 	      else $('.begin_step2').hide();
 	    });
 	  
@@ -989,6 +1221,18 @@
      	 		var temp_WorkflowElement = new Workflow_Element(questionID,blank_condition);
     			Campaign_Workflow.push(temp_WorkflowElement); 		    	
 		    }
+			
+		function checkFirstQuestion(quesSequence, quesID)
+			{				
+				if (quesSequence.length == 1)
+				{
+					console.log('Hey, here is the first question of the campaign: ' + quesID);
+					
+					StartQues = quesID;
+		    		var a = cy.$("#" + StartQues);	
+		    		a.addClass('highlight');			
+				}				
+			}
 		
 		//---------------------------------FreeTextSingle-----------------------------------
 		$('#FreeTextSingle').on('click', function(e) {
@@ -1060,7 +1304,7 @@
 					console.log('The nodeSequence is ' + JSON.stringify(nodeSequence));
 					
 					resetCommonForm();
-					addTransition(nodeSequence);	
+					//addTransition(nodeSequence);	
 					checkFirstQuestion(nodeSequence, quesID);	
 					
 				}
@@ -1078,7 +1322,7 @@
 						}
 					var quesID = ID_of_edited_question;
 					var quesType = FreeTextSingle_const;
-					var quesLabel = [$('#FreeTextSingle_Form_QuesText').val(),$('#FreeTextSingle_Form_QuesImage').val(),$('#FreeTextSingle_Form_QuesAudio').val()];
+					var quesLabel = [$('#commonEdit_QuesText').val(),(selectedFile == '') ? $('#commonEdit_QuesPicURL').val():'http://www.citizense.uji.es/Pic/' + selectedFile,''];
 					var temp = new FreeTextSingle(quesID, quesType, quesLabel);
 					Question_Array.push(temp);
 					
@@ -1088,7 +1332,8 @@
 					$('.FreeTextSingle_input').val('');		
 					//hide the form
 					$('#FreeTextSingle_Form').hide();
-					$("#display_hide").show();				
+					resetCommonFormEdit();			
+
 				}
 			
 			$('#edit_node').hide();
@@ -1135,7 +1380,7 @@
 						console.log('Finally quesID is ' + quesID);
 						question_number++;
 						var quesType = FreeTextMulti_const;
-						var quesLabel = [$('#FreeTextMulti_Form_QuesText').val(),$('#FreeTextMulti_Form_QuesImage').val(),$('#FreeTextMulti_Form_QuesAudio').val()];
+						var quesLabel = [$('#common_QuesText').val(),(selectedFile == '') ? '':'http://www.citizense.uji.es/Pic/' + selectedFile ,''/*blank value for audio URL*/];
 						var subcomponent_array = [];
 						
 						for(var i=0;i<subcomponent_count;i++)
@@ -1153,6 +1398,8 @@
 						var temp = new FreeTextMulti(quesID, quesType, quesLabel, subcomponent_array);
 						Question_Array.push(temp);
 						
+						
+						
 						addNode(quesID);
 						addDefaultTransition(quesID);
 						
@@ -1163,11 +1410,14 @@
 						//hide the form
 						$('#FreeTextMulti_Form').hide();	
 						
+						resetCommonForm();
+						
 						//reset the variable that counts the subcomponent
 						subcomponent_count = 0;
 						$("#display_hide").show();	
 						nodeSequence.push(quesID);
 						console.log('The nodeSequence is ' + JSON.stringify(nodeSequence));
+						
 				}
 			
 			else
@@ -1184,7 +1434,7 @@
 					var subcomponent_array = [];
 					var quesID = ID_of_edited_question;
 					var quesType = FreeTextMulti_const;
-					var quesLabel = [$('#FreeTextMulti_Form_QuesText').val(),$('#FreeTextMulti_Form_QuesImage').val(),$('#FreeTextMulti_Form_QuesAudio').val()];
+					var quesLabel = [$('#commonEdit_QuesText').val(),(selectedFile == '') ? $('#commonEdit_QuesPicURL').val():'http://www.citizense.uji.es/Pic/' + selectedFile,''];
 					
 					for(var i=0;i<subcomponent_count;i++)
 					  {
@@ -1212,7 +1462,9 @@
 					
 					//reset the variable that counts the subcomponent
 					subcomponent_count = 0;
-					$("#display_hide").show();				
+					$("#display_hide").show();	
+					resetCommonFormEdit();			
+
 				}
 			$('#edit_node').hide();
 		});
@@ -1265,13 +1517,13 @@
 				console.log(quesID);				
 		});
 		
-		//--------------------------------------MultipleChoiceSingle-----------------------------------
-		$('#MultipleChoiceSingle').on('click', function(e) {
+		//-----------------------------------MultipleChoiceSingle---------------------------------
+		$('#MultipleChoiceSingle').on('click', function(e) {	
 			console.log('question_number is ' + question_number);
 			$('.question').hide();
 			$('.quesTrans').hide();
 			$('#MultipleChoiceSingle_Form').show();
-			$("#display_hide").hide();	
+			$("#display_hide").hide();
 		});
 
 		$('#MultipleChoiceSingle_Cancel').on('click', function(e) {
@@ -1279,68 +1531,20 @@
 		    	//reset text fields
 		    	$('.MultipleChoiceSingle_input').val('');
 		    	//hide the form
-		    	$('#MultipleChoiceSingle_Form').hide();	
-		    	
+		    	$('#MultipleChoiceSingle_Form').hide();
 		    	resetCommonFormEdit();
 				resetCommonForm();
-				
-		    	$(".subcomponent_MultipleChoiceSingle").remove()  ;
 		    	
 		    	ID_of_edited_question = '';
-
+		    	
+		    	$('.subcomponent_MultipleChoiceSingle').remove();
+		    	$('#edit_node').hide();
 		    });
-
-		$('#MultipleChoiceSingle_addSubcomponent').on('click', function(e) {
-			console.log('question_number is ' + question_number);
-			if (ID_of_edited_question == '')
-				{
-					var quesID = "Q" + question_number;	
-					while( check_duplicate_quesID(question_number) == true )
-					{
-						question_number++;
-						quesID = "Q" + question_number;
-						console.log('Try with ' + quesID);					
-					}
-					console.log('Current questionID of this MultipleChoiceSingle is ' + quesID);
-					//Add a new div
-					$('<div id="' + quesID + '_subcomponent_div' + subcomponent_count + '" class = "subcomponent_MultipleChoiceSingle hover_action subcomponent" </div>').appendTo("#commonDiv");	
-				}
-			else 
-				{
-					var quesID = ID_of_edited_question;
-					//Add a new div
-					$('<div id="' + quesID + '_subcomponent_div' + subcomponent_count + '" class = "subcomponent_MultipleChoiceSingle hover_action subcomponent" </div>').appendTo("#commonDivEdit");	
-				}
-			
-			
-			
-			//Add text "Sub-Component" to the newly-created div
-			$('<p id ="' + quesID + '_subcomponent_text_' + subcomponent_count + '" class = "subcomponent_MultipleChoiceSingle">').text('Option').appendTo("#" + quesID + '_subcomponent_div' + subcomponent_count);
-			
-			//Add textfield to the newly-created div
-			$('<input type="text" class = "subcomponent_MultipleChoiceSingle" id="' + quesID + '_subcomponent_' + subcomponent_count + '"> </input>' ).appendTo("#" + quesID + '_subcomponent_div' + subcomponent_count);
-			
-			//Add REMOVE button to the newly-created div
-			$('<button id="Delete_subcomponent_' + subcomponent_count + '" type="button" class="btn btn-danger" style="display: none;"> <span class="glyphicon glyphicon-remove-sign"></span> Remove </button>')
-			.click(function(){
-				
-				var thisButton_ID = $(this).attr('id');
-				console.log(thisButton_ID);
-				var subcomponent_index = thisButton_ID.substring(thisButton_ID.lastIndexOf('_')+1, thisButton_ID.length );
-				console.log(subcomponent_index);
-				$('#' + quesID + '_subcomponent_div' + subcomponent_index).remove();
-				//subcomponent_count--;
-							              
-		        })
-			.appendTo("#" + quesID + '_subcomponent_div' + subcomponent_count);
-			
-			subcomponent_count++;	
-			console.log(subcomponent_count);
-			console.log(quesID);		
-		});
 
 		$('#MultipleChoiceSingle_Save').on('click', function(e) {
 			console.log('question_number is ' + question_number);
+			
+			// A new MultipleChoiceSingle question is being created
 			if (ID_of_edited_question == '')
 				{
 						var subcomponent_array = [];
@@ -1354,25 +1558,28 @@
 						console.log('Finally quesID is ' + quesID);
 						question_number++;
 						var quesType = MultipleChoiceSingle_const;
-						var quesLabel = [$('#MultipleChoiceSingle_Form_QuesText').val(),$('#MultipleChoiceSingle_Form_QuesImage').val(),$('#MultipleChoiceSingle_Form_QuesAudio').val()];
+						var quesLabel = [$('#common_QuesText').val(),(selectedFile == '') ? '':'http://www.citizense.uji.es/Pic/' + selectedFile ,''/*blank value for audio URL*/];
+						var subcomponent_array = [];
 						
 						for(var i=0;i<subcomponent_count;i++)
 						  {
-							  var ID = quesID + '_subcomponent_' + i;
-							  console.log(ID);
-							  console.log(   $('#' + ID).val()      );
-							  if (  $('#' + ID).length  )
-								  {
-								  		if ($('#' + ID).val() != '') subcomponent_array.push(  $('#' + ID).val()  );
-								  }					  
+						  var ID = quesID + '_subcomponent_' + i;
+						  console.log(ID);
+						  console.log(   $('#' + ID).val()      );
+						  if (  $('#' + ID).length  )
+						  {
+						  		if ($('#' + ID).val() != '') subcomponent_array.push(  $('#' + ID).val()  );
+						  }
 						  }	
 						
 						//Add the new MultipleChoiceSingle to the Question_Array of the Campaign
 						var temp = new MultipleChoiceSingle(quesID, quesType, quesLabel, subcomponent_array);
 						Question_Array.push(temp);
+						
+						
 						
 						addNode(quesID);
-						addDefaultTransition(quesID); 
+						addDefaultTransition(quesID);
 						
 						//reset text fields
 						$('.MultipleChoiceSingle_input').val('');
@@ -1381,64 +1588,120 @@
 						//hide the form
 						$('#MultipleChoiceSingle_Form').hide();	
 						
-						//reset the variable that counts the subcomponent
-						subcomponent_count = 0;	
-						$("#display_hide").show();	
-						nodeSequence.push(quesID);
-						console.log('The nodeSequence is ' + JSON.stringify(nodeSequence));
-				}
-			else
-				{
-						for (var i=0;i<Question_Array.length;i++)
-						{
-							if (Question_Array[i].getID()  == ID_of_edited_question)
-								{
-									console.log("Question found, data is " + Question_Array[i].getID() + ' ' + Question_Array[i].getLabel());
-									Question_Array.splice(i,1);
-								}
-						}
-						
-						var subcomponent_array = [];
-						var quesID = ID_of_edited_question;
-						var quesType = MultipleChoiceSingle_const;
-						var quesLabel = [$('#MultipleChoiceSingle_Form_QuesText').val(),$('#MultipleChoiceSingle_Form_QuesImage').val(),$('#MultipleChoiceSingle_Form_QuesAudio').val()];
-						
-						for(var i=0;i<subcomponent_count;i++)
-						  {
-						  	var ID = quesID + '_subcomponent_' + i;
-						  	console.log(ID);
-						  	console.log(   $('#' + ID).val()      );
-						  	if (  $('#' + ID).length  )
-							  {
-							  		if ($('#' + ID).val() != '') subcomponent_array.push(  $('#' + ID).val()  );
-							  }
-						  }	
-						
-						//Add the new MultipleChoiceSingle to the Question_Array of the Campaign
-						var temp = new MultipleChoiceSingle(quesID, quesType, quesLabel, subcomponent_array);
-						Question_Array.push(temp);
-						
-						ID_of_edited_question = '';
-						
-						//reset text fields
-						$('.MultipleChoiceSingle_input').val('');
-						$(".subcomponent_MultipleChoiceSingle").remove()  ;
-						
-						//hide the form
-						$('#MultipleChoiceSingle_Form').hide();	
+						resetCommonForm();
 						
 						//reset the variable that counts the subcomponent
 						subcomponent_count = 0;
-						$("#display_hide").show();				
-				}		
+						$("#display_hide").show();	
+						nodeSequence.push(quesID);
+						console.log('The nodeSequence is ' + JSON.stringify(nodeSequence));
+						
+				}
+			
+			else
+				{
+					for (var i=0;i<Question_Array.length;i++)
+					{
+						if (Question_Array[i].getID()  == ID_of_edited_question)
+							{
+								console.log("Question found, data is " + Question_Array[i].getID() + ' ' + Question_Array[i].getLabel());
+								Question_Array.splice(i,1);
+							}
+					}
+					
+					var subcomponent_array = [];
+					var quesID = ID_of_edited_question;
+					var quesType = MultipleChoiceSingle_const;
+					var quesLabel = [$('#commonEdit_QuesText').val(),(selectedFile == '') ? $('#commonEdit_QuesPicURL').val():'http://www.citizense.uji.es/Pic/' + selectedFile,''];
+					
+					for(var i=0;i<subcomponent_count;i++)
+					  {
+					  	var ID = quesID + '_subcomponent_' + i;
+					  	console.log(ID);
+					  	console.log(   $('#' + ID).val()      );
+					  	if (  $('#' + ID).length  )
+						  {
+						  		if ($('#' + ID).val() != '') subcomponent_array.push(  $('#' + ID).val()  );
+						  }
+					  }	
+					
+					//Add the new MultipleChoiceSingle to the Question_Array of the Campaign
+					var temp = new MultipleChoiceSingle(quesID, quesType, quesLabel, subcomponent_array);
+					Question_Array.push(temp);
+					
+					ID_of_edited_question = '';
+					
+					//reset text fields
+					$('.MultipleChoiceSingle_input').val('');
+					$(".subcomponent_MultipleChoiceSingle").remove()  ;
+					
+					//hide the form
+					$('#MultipleChoiceSingle_Form').hide();	
+					
+					//reset the variable that counts the subcomponent
+					subcomponent_count = 0;
+					$("#display_hide").show();	
+					resetCommonFormEdit();			
+
+				}
+			$('#edit_node').hide();
 		});
+
+		$('#MultipleChoiceSingle_addSubcomponent').on('click', function(e) {
+			console.log('question_number is ' + question_number);
+			//Add new subcomponent to a new MultipleChoiceSingle
+			if (ID_of_edited_question == '')
+				{
+					var quesID = "Q" + question_number;	
+					while( check_duplicate_quesID(question_number) == true )
+					{
+						question_number++;
+						quesID = "Q" + question_number;
+						console.log('Try with ' + quesID);					
+					}
+					console.log('Current questionID of this MultipleChoiceSingle is ' + quesID);
+					//Add a new div
+					$('<div id="' + quesID + '_subcomponent_div' + subcomponent_count + '" class = "subcomponent_MultipleChoiceSingle hover_action subcomponent" </div>').appendTo("#commonDiv");						
+				}
+			else
+			{
+				var quesID = ID_of_edited_question;	
+				//Add a new div
+				$('<div id="' + quesID + '_subcomponent_div' + subcomponent_count + '" class = "subcomponent_MultipleChoiceSingle hover_action subcomponent" </div>').appendTo("#commonDivEdit");				
+			}						
+				
+				//Add text "Option" to the newly-created div
+				$('<p id ="' + quesID + '_subcomponent_text_' + subcomponent_count + '" class = "subcomponent_MultipleChoiceSingle">').text('Option').appendTo("#" + quesID + '_subcomponent_div' + subcomponent_count);
+				
+				//Add textfield to the newly-created div
+				$('<input type="text" class = "subcomponent_MultipleChoiceSingle" id="' + quesID + '_subcomponent_' + subcomponent_count + '"> </input>' ).appendTo("#" + quesID + '_subcomponent_div' + subcomponent_count);
+				
+				//Add REMOVE button to the newly-created div
+				$('<button id="Delete_subcomponent_' + subcomponent_count + '" type="button" class="btn btn-danger" style="display: none;"> <span class="glyphicon glyphicon-remove-sign"></span> Remove </button>')
+				.click(function(){
+					
+					var thisButton_ID = $(this).attr('id');
+					console.log(thisButton_ID);
+					var subcomponent_index = thisButton_ID.substring(thisButton_ID.lastIndexOf('_')+1, thisButton_ID.length );
+					console.log(subcomponent_index);
+					$('#' + quesID + '_subcomponent_div' + subcomponent_index).remove();
+					//subcomponent_count--;
+								              
+		            })
+				.appendTo("#" + quesID + '_subcomponent_div' + subcomponent_count);
+				
+				subcomponent_count++;	
+				console.log(subcomponent_count);
+				console.log(quesID);				
+		});
+
 		
-		//-------------------------------MultipleChoiceMulti----------------------------------------
+		//-----------------------------------MultipleChoiceMulti---------------------------------
 		$('#MultipleChoiceMulti').on('click', function(e) {	
 			console.log('question_number is ' + question_number);
 			$('.question').hide();
 			$('.quesTrans').hide();
-			$('#MultipleChoiceMulti_Form').show();	
+			$('#MultipleChoiceMulti_Form').show();
 			$("#display_hide").hide();
 		});
 
@@ -1447,18 +1710,125 @@
 		    	//reset text fields
 		    	$('.MultipleChoiceMulti_input').val('');
 		    	//hide the form
-		    	$('#MultipleChoiceMulti_Form').hide();	
-		    	
+		    	$('#MultipleChoiceMulti_Form').hide();
 		    	resetCommonFormEdit();
 				resetCommonForm();
-		    	$('.subcomponent_MultipleChoiceMulti').remove();
 		    	
 		    	ID_of_edited_question = '';
-
+		    	
+		    	$('.subcomponent_MultipleChoiceMulti').remove();
+		    	$('#edit_node').hide();
 		    });
+
+		$('#MultipleChoiceMulti_Save').on('click', function(e) {
+			console.log('question_number is ' + question_number);
+			
+			// A new MultipleChoiceMulti question is being created
+			if (ID_of_edited_question == '')
+				{
+						var subcomponent_array = [];
+						var quesID = "Q" + question_number;
+						while( check_duplicate_quesID(question_number) == true )
+						{
+							question_number++;
+							quesID = "Q" + question_number;
+							console.log('Try with ' + quesID);					
+						}
+						console.log('Finally quesID is ' + quesID);
+						question_number++;
+						var quesType = MultipleChoiceMulti_const;
+						var quesLabel = [$('#common_QuesText').val(),(selectedFile == '') ? '':'http://www.citizense.uji.es/Pic/' + selectedFile ,''/*blank value for audio URL*/];
+						var subcomponent_array = [];
+						
+						for(var i=0;i<subcomponent_count;i++)
+						  {
+						  var ID = quesID + '_subcomponent_' + i;
+						  console.log(ID);
+						  console.log(   $('#' + ID).val()      );
+						  if (  $('#' + ID).length  )
+						  {
+						  		if ($('#' + ID).val() != '') subcomponent_array.push(  $('#' + ID).val()  );
+						  }
+						  }	
+						
+						//Add the new MultipleChoiceMulti to the Question_Array of the Campaign
+						var temp = new MultipleChoiceMulti(quesID, quesType, quesLabel, subcomponent_array);
+						Question_Array.push(temp);
+						
+						
+						
+						addNode(quesID);
+						addDefaultTransition(quesID);
+						
+						//reset text fields
+						$('.MultipleChoiceMulti_input').val('');
+						$(".subcomponent_MultipleChoiceMulti").remove()  ;
+						
+						//hide the form
+						$('#MultipleChoiceMulti_Form').hide();	
+						
+						resetCommonForm();
+						
+						//reset the variable that counts the subcomponent
+						subcomponent_count = 0;
+						$("#display_hide").show();	
+						nodeSequence.push(quesID);
+						console.log('The nodeSequence is ' + JSON.stringify(nodeSequence));
+						
+				}
+			
+			else
+				{
+					for (var i=0;i<Question_Array.length;i++)
+					{
+						if (Question_Array[i].getID()  == ID_of_edited_question)
+							{
+								console.log("Question found, data is " + Question_Array[i].getID() + ' ' + Question_Array[i].getLabel());
+								Question_Array.splice(i,1);
+							}
+					}
+					
+					var subcomponent_array = [];
+					var quesID = ID_of_edited_question;
+					var quesType = MultipleChoiceMulti_const;
+					var quesLabel = [$('#commonEdit_QuesText').val(),(selectedFile == '') ? $('#commonEdit_QuesPicURL').val():'http://www.citizense.uji.es/Pic/' + selectedFile,''];
+					
+					for(var i=0;i<subcomponent_count;i++)
+					  {
+					  	var ID = quesID + '_subcomponent_' + i;
+					  	console.log(ID);
+					  	console.log(   $('#' + ID).val()      );
+					  	if (  $('#' + ID).length  )
+						  {
+						  		if ($('#' + ID).val() != '') subcomponent_array.push(  $('#' + ID).val()  );
+						  }
+					  }	
+					
+					//Add the new MultipleChoiceMulti to the Question_Array of the Campaign
+					var temp = new MultipleChoiceMulti(quesID, quesType, quesLabel, subcomponent_array);
+					Question_Array.push(temp);
+					
+					ID_of_edited_question = '';
+					
+					//reset text fields
+					$('.MultipleChoiceMulti_input').val('');
+					$(".subcomponent_MultipleChoiceMulti").remove()  ;
+					
+					//hide the form
+					$('#MultipleChoiceMulti_Form').hide();	
+					
+					//reset the variable that counts the subcomponent
+					subcomponent_count = 0;
+					$("#display_hide").show();	
+					resetCommonFormEdit();			
+
+				}
+			$('#edit_node').hide();
+		});
 
 		$('#MultipleChoiceMulti_addSubcomponent').on('click', function(e) {
 			console.log('question_number is ' + question_number);
+			//Add new subcomponent to a new MultipleChoiceMulti
 			if (ID_of_edited_question == '')
 				{
 					var quesID = "Q" + question_number;	
@@ -1470,138 +1840,42 @@
 					}
 					console.log('Current questionID of this MultipleChoiceMulti is ' + quesID);
 					//Add a new div
-					$('<div id="' + quesID + '_subcomponent_div' + subcomponent_count + '" class = "subcomponent_MultipleChoiceMulti hover_action subcomponent" </div>').appendTo("#commonDiv");	
+					$('<div id="' + quesID + '_subcomponent_div' + subcomponent_count + '" class = "subcomponent_MultipleChoiceMulti hover_action subcomponent" </div>').appendTo("#commonDiv");						
 				}
 			else
-				{
-					var quesID = ID_of_edited_question;
-					//Add a new div
-					$('<div id="' + quesID + '_subcomponent_div' + subcomponent_count + '" class = "subcomponent_MultipleChoiceMulti hover_action subcomponent" </div>').appendTo("#commonDivEdit");	
-				}		
-			
-			
-			//Add text "Sub-Component" to the newly-created div
-			$('<p id ="' + quesID + '_subcomponent_text_' + subcomponent_count + '" class = "subcomponent_MultipleChoiceMulti">').text('Option').appendTo("#" + quesID + '_subcomponent_div' + subcomponent_count);
-			
-			//Add textfield to the newly-created div
-			$('<input type="text" class = "subcomponent_MultipleChoiceMulti" id="' + quesID + '_subcomponent_' + subcomponent_count + '"> </input>' ).appendTo("#" + quesID + '_subcomponent_div' + subcomponent_count);
-			
-			//Add REMOVE button to the newly-created div
-			$('<button id="Delete_subcomponent_' + subcomponent_count + '" type="button" class="btn btn-danger" style="display: none;"> <span class="glyphicon glyphicon-remove-sign"></span> Remove </button>')
-			.click(function(){
-				
-				var thisButton_ID = $(this).attr('id');
-				console.log(thisButton_ID);
-				var subcomponent_index = thisButton_ID.substring(thisButton_ID.lastIndexOf('_')+1, thisButton_ID.length );
-				console.log(subcomponent_index);
-				$('#' + quesID + '_subcomponent_div' + subcomponent_index).remove();
-				//subcomponent_count--;
-							              
-		        })
-			.appendTo("#" + quesID + '_subcomponent_div' + subcomponent_count);
-			
-			subcomponent_count++;	
-			console.log(subcomponent_count);
-			console.log(quesID);		
-		});
-
-		$('#MultipleChoiceMulti_Save').on('click', function(e) {
-			console.log('question_number is ' + question_number);
-			if (ID_of_edited_question == '')
 			{
-					var subcomponent_array = [];
-					var quesID = "Q" + question_number;
-					while( check_duplicate_quesID(question_number) == true )
-					{
-						question_number++;
-						quesID = "Q" + question_number;
-						console.log('Try with ' + quesID);					
-					}
-					console.log('Finally quesID is ' + quesID);
-					question_number++;
-					var quesType = MultipleChoiceMulti_const;
-					var quesLabel = [$('#MultipleChoiceMulti_Form_QuesText').val(),$('#MultipleChoiceMulti_Form_QuesImage').val(),$('#MultipleChoiceMulti_Form_QuesAudio').val()];
+				var quesID = ID_of_edited_question;	
+				//Add a new div
+				$('<div id="' + quesID + '_subcomponent_div' + subcomponent_count + '" class = "subcomponent_MultipleChoiceMulti hover_action subcomponent" </div>').appendTo("#commonDivEdit");				
+			}						
+				
+				//Add text "Option" to the newly-created div
+				$('<p id ="' + quesID + '_subcomponent_text_' + subcomponent_count + '" class = "subcomponent_MultipleChoiceMulti">').text('Option').appendTo("#" + quesID + '_subcomponent_div' + subcomponent_count);
+				
+				//Add textfield to the newly-created div
+				$('<input type="text" class = "subcomponent_MultipleChoiceMulti" id="' + quesID + '_subcomponent_' + subcomponent_count + '"> </input>' ).appendTo("#" + quesID + '_subcomponent_div' + subcomponent_count);
+				
+				//Add REMOVE button to the newly-created div
+				$('<button id="Delete_subcomponent_' + subcomponent_count + '" type="button" class="btn btn-danger" style="display: none;"> <span class="glyphicon glyphicon-remove-sign"></span> Remove </button>')
+				.click(function(){
 					
-					for(var i=0;i<subcomponent_count;i++)
-					  {
-						  var ID = quesID + '_subcomponent_' + i;
-						  console.log(ID);
-						  console.log(   $('#' + ID).val()      );
-						  if (  $('#' + ID).length  )
-							  {
-							  		if ($('#' + ID).val() != '') subcomponent_array.push(  $('#' + ID).val()  );
-							  }					  
-					  }	
-					
-					//Add the new MultipleChoiceMulti to the Question_Array of the Campaign
-					var temp = new MultipleChoiceMulti(quesID, quesType, quesLabel, subcomponent_array);
-					Question_Array.push(temp);
-					
-					addNode(quesID);
-		    		addDefaultTransition(quesID); 
-					
-					//reset text fields
-					$('.MultipleChoiceMulti_input').val('');
-					$(".subcomponent_MultipleChoiceMulti").remove()  ;
-					
-					//hide the form
-					$('#MultipleChoiceMulti_Form').hide();	
-					
-					//reset the variable that counts the subcomponent
-					subcomponent_count = 0;	
-					$("#display_hide").show();		
-					nodeSequence.push(quesID);
-					console.log('The nodeSequence is ' + JSON.stringify(nodeSequence));
-			}
-			else
-				{
-						for (var i=0;i<Question_Array.length;i++)
-						{
-							if (Question_Array[i].getID()  == ID_of_edited_question)
-								{
-									console.log("Question found, data is " + Question_Array[i].getID() + ' ' + Question_Array[i].getLabel());
-									Question_Array.splice(i,1);
-								}
-						}
-						
-						var subcomponent_array = [];
-						var quesID = ID_of_edited_question;
-						var quesType = MultipleChoiceMulti_const;
-						var quesLabel = [$('#MultipleChoiceMulti_Form_QuesText').val(),$('#MultipleChoiceMulti_Form_QuesImage').val(),$('#MultipleChoiceMulti_Form_QuesAudio').val()];
-						
-						for(var i=0;i<subcomponent_count;i++)
-						  {
-						  	var ID = quesID + '_subcomponent_' + i;
-						  	console.log(ID);
-						  	console.log(   $('#' + ID).val()      );
-						  	if (  $('#' + ID).length  )
-							  {
-							  		if ($('#' + ID).val() != '') subcomponent_array.push(  $('#' + ID).val()  );
-							  }
-						  }	
-						
-						//Add the new MultipleChoiceMulti to the Question_Array of the Campaign
-						var temp = new MultipleChoiceMulti(quesID, quesType, quesLabel, subcomponent_array);
-						Question_Array.push(temp);
-						
-						ID_of_edited_question = '';
-						
-						//reset text fields
-						$('.MultipleChoiceMulti_input').val('');
-						$(".subcomponent_MultipleChoiceMulti").remove()  ;
-						
-						//hide the form
-						$('#MultipleChoiceMulti_Form').hide();	
-						
-						//reset the variable that counts the subcomponent
-						subcomponent_count = 0;
-						$("#display_hide").show();				
-				}		
+					var thisButton_ID = $(this).attr('id');
+					console.log(thisButton_ID);
+					var subcomponent_index = thisButton_ID.substring(thisButton_ID.lastIndexOf('_')+1, thisButton_ID.length );
+					console.log(subcomponent_index);
+					$('#' + quesID + '_subcomponent_div' + subcomponent_index).remove();
+					//subcomponent_count--;
+								              
+		            })
+				.appendTo("#" + quesID + '_subcomponent_div' + subcomponent_count);
+				
+				subcomponent_count++;	
+				console.log(subcomponent_count);
+				console.log(quesID);				
 		});
 		
-		//---------------------------------AudioSensor-----------------------------------
-		$('#AudioSensor').on('click', function(e) {	
-			console.log('question_number is ' + question_number);
+		//---------------------------------AudioSensor-----------------------------------		
+		$('#AudioSensor').on('click', function(e) {
 			$('.question').hide();
 			$('.quesTrans').hide();
 			$('#AudioSensor_Form').show();
@@ -1616,17 +1890,17 @@
 		    	$('#AudioSensor_Form').hide();
 		    	resetCommonFormEdit();
 				resetCommonForm();
-		    	$('#edit_node').hide();
 		    	
-		    	ID_of_edited_question = '';		
-		    });
+		    	ID_of_edited_question = '';
+		});	
 
 		$('#AudioSensor_Save').on('click', function(e) {
-			console.log('question_number is ' + question_number);
+			
 			//A new AudioSensor is created
 			if (ID_of_edited_question == '')
 				{
 					var quesID = "Q" + question_number;
+					
 					while( check_duplicate_quesID(question_number) == true )
 					{
 						question_number++;
@@ -1634,15 +1908,17 @@
 						console.log('Try with ' + quesID);					
 					}
 					console.log('Finally quesID is ' + quesID);
+					
 					question_number++;
 					var quesType = AudioSensor_const;
-					var quesLabel = [$('#AudioSensor_Form_QuesText').val(),$('#AudioSensor_Form_QuesImage').val()];
+					var quesLabel = [$('#common_QuesText').val(),(selectedFile == '') ? '':'http://www.citizense.uji.es/Pic/' + selectedFile ,''/*blank value for audio URL*/];
+					console.log('quesLabel is ' + JSON.stringify(quesLabel));
 					var temp = new AudioSensor(quesID, quesType, quesLabel);
 					Question_Array.push(temp);		
 				
 					addNode(quesID);
-		    		addDefaultTransition(quesID);
-		  		
+		    		addDefaultTransition(quesID);		  		
+					
 		 	 		//reset text fields
 					$('.AudioSensor_input').val('');		
 					//hide the form
@@ -1650,6 +1926,11 @@
 					$("#display_hide").show();	
 					nodeSequence.push(quesID);
 					console.log('The nodeSequence is ' + JSON.stringify(nodeSequence));
+					
+					resetCommonForm();
+					//addTransition(nodeSequence);	
+					checkFirstQuestion(nodeSequence, quesID);	
+					
 				}
 			
 			//A AudioSensor is being edited, 
@@ -1665,7 +1946,7 @@
 						}
 					var quesID = ID_of_edited_question;
 					var quesType = AudioSensor_const;
-					var quesLabel = [$('#AudioSensor_Form_QuesText').val(),$('#AudioSensor_Form_QuesImage').val()];
+					var quesLabel = [$('#commonEdit_QuesText').val(),(selectedFile == '') ? $('#commonEdit_QuesPicURL').val():'http://www.citizense.uji.es/Pic/' + selectedFile,''];
 					var temp = new AudioSensor(quesID, quesType, quesLabel);
 					Question_Array.push(temp);
 					
@@ -1675,19 +1956,21 @@
 					$('.AudioSensor_input').val('');		
 					//hide the form
 					$('#AudioSensor_Form').hide();
-					$("#display_hide").show();			
+					resetCommonFormEdit();			
+
 				}
+			
 			$('#edit_node').hide();
 		});
 		
-		//---------------------------------TextDisplay-----------------------------------
+		//---------------------------------TextDisplay-----------------------------------		
 		$('#TextDisplay').on('click', function(e) {
 			$('.question').hide();
 			$('.quesTrans').hide();
 			$('#TextDisplay_Form').show();
 			$("#display_hide").hide();
-		});		
-		
+		});
+
 		$('#TextDisplay_Cancel').on('click', function(e) {
 		    	
 		    	//reset text fields
@@ -1696,10 +1979,9 @@
 		    	$('#TextDisplay_Form').hide();
 		    	resetCommonFormEdit();
 				resetCommonForm();
-		    	$('#edit_node').hide();
 		    	
-		    	ID_of_edited_question = '';		    	
-		    });
+		    	ID_of_edited_question = '';
+		});	
 
 		$('#TextDisplay_Save').on('click', function(e) {
 			
@@ -1711,27 +1993,33 @@
 					while( check_duplicate_quesID(question_number) == true )
 					{
 						question_number++;
-						quesID = "T" + question_number;
+						quesID = "Q" + question_number;
 						console.log('Try with ' + quesID);					
 					}
 					console.log('Finally quesID is ' + quesID);
 					
 					question_number++;
 					var quesType = TextDisplay_const;
-					var quesLabel = [$('#TextDisplay_Form_QuesText').val(),$('#TextDisplay_Form_QuesImage').val(),$('#TextDisplay_Form_QuesAudio').val()];
+					var quesLabel = [$('#common_QuesText').val(),(selectedFile == '') ? '':'http://www.citizense.uji.es/Pic/' + selectedFile ,''/*blank value for audio URL*/];
+					console.log('quesLabel is ' + JSON.stringify(quesLabel));
 					var temp = new TextDisplay(quesID, quesType, quesLabel);
-					Question_Array.push(temp);		
-				
+					Question_Array.push(temp);						
+					
 					addNode(quesID);
-		    		addDefaultTransition(quesID); 
+		    		addDefaultTransition(quesID);
 		  		
 		 	 		//reset text fields
 					$('.TextDisplay_input').val('');		
 					//hide the form
 					$('#TextDisplay_Form').hide();
-					$("#display_hide").show();
+					$("#display_hide").show();	
 					nodeSequence.push(quesID);
 					console.log('The nodeSequence is ' + JSON.stringify(nodeSequence));
+					
+					resetCommonForm();
+					//addTransition(nodeSequence);	
+					checkFirstQuestion(nodeSequence, quesID);	
+					
 				}
 			
 			//A TextDisplay is being edited, 
@@ -1747,7 +2035,7 @@
 						}
 					var quesID = ID_of_edited_question;
 					var quesType = TextDisplay_const;
-					var quesLabel = [$('#TextDisplay_Form_QuesText').val(),$('#TextDisplay_Form_QuesImage').val(),$('#TextDisplay_Form_QuesAudio').val()];
+					var quesLabel = [$('#commonEdit_QuesText').val(),(selectedFile == '') ? $('#commonEdit_QuesPicURL').val():'http://www.citizense.uji.es/Pic/' + selectedFile,''];
 					var temp = new TextDisplay(quesID, quesType, quesLabel);
 					Question_Array.push(temp);
 					
@@ -1757,13 +2045,14 @@
 					$('.TextDisplay_input').val('');		
 					//hide the form
 					$('#TextDisplay_Form').hide();
-					$("#display_hide").show();				
+					resetCommonFormEdit();			
+
 				}
 			
 			$('#edit_node').hide();
 		});
 		
-		//---------------------------------FreeNumericSingle-----------------------------------
+		//---------------------------------FreeNumericSingle-----------------------------------		
 		$('#FreeNumericSingle').on('click', function(e) {
 			$('.question').hide();
 			$('.quesTrans').hide();
@@ -1778,10 +2067,10 @@
 		    	//hide the form
 		    	$('#FreeNumericSingle_Form').hide();
 		    	resetCommonFormEdit();
-				resetCommonForm();	    	
+				resetCommonForm();
 		    	
-		    	ID_of_edited_question = '';		    	
-		    });
+		    	ID_of_edited_question = '';
+		});	
 
 		$('#FreeNumericSingle_Save').on('click', function(e) {
 			
@@ -1800,12 +2089,13 @@
 					
 					question_number++;
 					var quesType = FreeNumericSingle_const;
-					var quesLabel = [$('#FreeNumericSingle_Form_QuesText').val(),$('#FreeNumericSingle_Form_QuesImage').val(),$('#FreeNumericSingle_Form_QuesAudio').val()];
+					var quesLabel = [$('#common_QuesText').val(),(selectedFile == '') ? '':'http://www.citizense.uji.es/Pic/' + selectedFile ,''/*blank value for audio URL*/];
+					console.log('quesLabel is ' + JSON.stringify(quesLabel));
 					var temp = new FreeNumericSingle(quesID, quesType, quesLabel);
 					Question_Array.push(temp);		
 				
 					addNode(quesID);
-		    		addDefaultTransition(quesID); 
+		    		addDefaultTransition(quesID);
 		  		
 		 	 		//reset text fields
 					$('.FreeNumericSingle_input').val('');		
@@ -1814,6 +2104,11 @@
 					$("#display_hide").show();	
 					nodeSequence.push(quesID);
 					console.log('The nodeSequence is ' + JSON.stringify(nodeSequence));
+					
+					resetCommonForm();
+					//addTransition(nodeSequence);	
+					checkFirstQuestion(nodeSequence, quesID);	
+					
 				}
 			
 			//A FreeNumericSingle is being edited, 
@@ -1829,7 +2124,7 @@
 						}
 					var quesID = ID_of_edited_question;
 					var quesType = FreeNumericSingle_const;
-					var quesLabel = [$('#FreeNumericSingle_Form_QuesText').val(),$('#FreeNumericSingle_Form_QuesImage').val(),$('#FreeNumericSingle_Form_QuesAudio').val()];
+					var quesLabel = [$('#commonEdit_QuesText').val(),(selectedFile == '') ? $('#commonEdit_QuesPicURL').val():'http://www.citizense.uji.es/Pic/' + selectedFile,''];
 					var temp = new FreeNumericSingle(quesID, quesType, quesLabel);
 					Question_Array.push(temp);
 					
@@ -1839,19 +2134,14 @@
 					$('.FreeNumericSingle_input').val('');		
 					//hide the form
 					$('#FreeNumericSingle_Form').hide();
-					$("#display_hide").show();				
+					resetCommonFormEdit();			
+
 				}
 			
 			$('#edit_node').hide();
-		});
+		});		
 		
-		//---------------------------------ContRange-----------------------------------
-		$('#ContRange').on('click', function(e) {
-			$('.question').hide();
-			$('.quesTrans').hide();
-			$('#ContRange_Form').show();
-			$("#display_hide").hide();
-		});
+		//---------------------------------ContRange-----------------------------------		
 
 		$('#ContRange_Cancel').on('click', function(e) {
 		    	
@@ -1880,30 +2170,143 @@
 					}
 					console.log('Finally quesID is ' + quesID);
 					
-					question_number++;
-					var quesType = ContRange_const;
-					var quesLabel = [$('#ContRange_Form_QuesText').val(),$('#ContRange_Form_QuesImage').val(),$('#ContRange_Form_QuesAudio').val()];
+					var min = $('#ContRange_min').val();
+					var max = $('#ContRange_max').val();
+					if ( (isNaN(min)) || (isNaN(max)) || (min>=max))
+					{
+						alert('Please check the minimum and/or maximum value, make sure it is a valid number');
+					}
+					else
+					{
+						question_number++;
+						var quesType = ContRange_const;
+						var quesLabel = [$('#common_QuesText').val(),(selectedFile == '') ? '':'http://www.citizense.uji.es/Pic/' + selectedFile ,''/*blank value for audio URL*/];
+						
+						var subcomponent_array = [];
+						subcomponent_array.push( $('#ContRange_min').val() ); //Read min value
+						subcomponent_array.push( $('#ContRange_max').val() ); //Read max value
+						
+						var temp = new ContRange(quesID, quesType, quesLabel, subcomponent_array);
+						Question_Array.push(temp);		
 					
-					var subcomponent_array = [];
-	    			subcomponent_array.push( $('#ContRange_min').val() ); //Read min value
-	    			subcomponent_array.push( $('#ContRange_max').val() ); //Read max value
-	    			
-	    			var temp = new ContRange(quesID, quesType, quesLabel, subcomponent_array);
-					Question_Array.push(temp);		
-				
-					addNode(quesID);
-		    		addDefaultTransition(quesID); 
-		  		
-		 	 		//reset text fields
-					$('.ContRange_input').val('');		
-					//hide the form
-					$('#ContRange_Form').hide();
-					$("#display_hide").show();	
-					nodeSequence.push(quesID);
-					console.log('The nodeSequence is ' + JSON.stringify(nodeSequence));
+						addNode(quesID);
+						addDefaultTransition(quesID); 
+					
+						//reset text fields
+						$('.ContRange_input').val('');		
+						//hide the form
+						$('#ContRange_Form').hide();
+						$("#display_hide").show();	
+						nodeSequence.push(quesID);
+						console.log('The nodeSequence is ' + JSON.stringify(nodeSequence));
+						resetCommonForm();
+					}				
 				}
 			
 			//A ContRange is being edited, 
+			else 
+				{
+					var min = $('#ContRange_min').val();
+					var max = $('#ContRange_max').val();
+					if ( (isNaN(min)) || (isNaN(max)) || (min>=max))
+					{
+						alert('Please check the minimum and/or maximum value, make sure it is a valid number');
+					}
+					else
+					{
+						for (var i=0;i<Question_Array.length;i++)
+							{
+								if (Question_Array[i].getID()  == ID_of_edited_question)
+									{
+										console.log("Question found, data is " + Question_Array[i].getID() + ' ' + Question_Array[i].getLabel());
+										Question_Array.splice(i,1);
+									}
+							}
+						var quesID = ID_of_edited_question;
+						var quesType = ContRange_const;
+						var quesLabel = [$('#commonEdit_QuesText').val(),(selectedFile == '') ? $('#commonEdit_QuesPicURL').val():'http://www.citizense.uji.es/Pic/' + selectedFile,''];
+						
+						var subcomponent_array = [];
+						subcomponent_array.push( $('#ContRange_min').val() ); //Read min value
+						subcomponent_array.push( $('#ContRange_max').val() ); //Read max value
+						
+						var temp = new ContRange(quesID, quesType, quesLabel, subcomponent_array);
+						Question_Array.push(temp);
+						
+						ID_of_edited_question = '';
+						
+						//reset text fields
+						$('.ContRange_input').val('');		
+						//hide the form
+						$('#ContRange_Form').hide();
+						$("#display_hide").show();	
+						resetCommonFormEdit();	
+					}											
+				}
+			
+			$('#edit_node').hide();
+		});
+		
+		//---------------------------------UploadPhoto-----------------------------------		
+		$('#UploadPhoto').on('click', function(e) {
+			$('.question').hide();
+			$('.quesTrans').hide();
+			$('#FreeNumericSingle_Form').show();
+			$("#display_hide").hide();
+		});
+
+		$('#UploadPhoto_Cancel').on('click', function(e) {
+		    	
+		    	//reset text fields
+		    	$('.UploadPhoto_input').val('');
+		    	//hide the form
+		    	$('#UploadPhoto_Form').hide();
+		    	resetCommonFormEdit();
+				resetCommonForm();
+		    	
+		    	ID_of_edited_question = '';
+		});	
+
+		$('#UploadPhoto_Save').on('click', function(e) {
+			
+			//A new UploadPhoto is created
+			if (ID_of_edited_question == '')
+				{
+					var quesID = "Q" + question_number;
+					
+					while( check_duplicate_quesID(question_number) == true )
+					{
+						question_number++;
+						quesID = "Q" + question_number;
+						console.log('Try with ' + quesID);					
+					}
+					console.log('Finally quesID is ' + quesID);
+					
+					question_number++;
+					var quesType = UploadPhoto_const;
+					var quesLabel = [$('#common_QuesText').val(),(selectedFile == '') ? '':'http://www.citizense.uji.es/Pic/' + selectedFile ,''/*blank value for audio URL*/];
+					console.log('quesLabel is ' + JSON.stringify(quesLabel));
+					var temp = new UploadPhoto(quesID, quesType, quesLabel);
+					Question_Array.push(temp);		
+				
+					addNode(quesID);
+		    		addDefaultTransition(quesID);
+		  		
+		 	 		//reset text fields
+					$('.UploadPhoto_input').val('');		
+					//hide the form
+					$('#UploadPhoto_Form').hide();
+					$("#display_hide").show();	
+					nodeSequence.push(quesID);
+					console.log('The nodeSequence is ' + JSON.stringify(nodeSequence));
+					
+					resetCommonForm();
+					//addTransition(nodeSequence);	
+					checkFirstQuestion(nodeSequence, quesID);	
+					
+				}
+			
+			//A UploadPhoto is being edited, 
 			else 
 				{
 					for (var i=0;i<Question_Array.length;i++)
@@ -1915,23 +2318,19 @@
 								}
 						}
 					var quesID = ID_of_edited_question;
-					var quesType = ContRange_const;
-					var quesLabel = [$('#ContRange_Form_QuesText').val(),$('#ContRange_Form_QuesImage').val(),$('#ContRange_Form_QuesAudio').val()];
-					
-					var subcomponent_array = [];
-	    			subcomponent_array.push( $('#ContRange_min').val() ); //Read min value
-	    			subcomponent_array.push( $('#ContRange_max').val() ); //Read max value
-					
-	    			var temp = new ContRange(quesID, quesType, quesLabel, subcomponent_array);
+					var quesType = UploadPhoto_const;
+					var quesLabel = [$('#commonEdit_QuesText').val(),(selectedFile == '') ? $('#commonEdit_QuesPicURL').val():'http://www.citizense.uji.es/Pic/' + selectedFile,''];
+					var temp = new UploadPhoto(quesID, quesType, quesLabel);
 					Question_Array.push(temp);
 					
 					ID_of_edited_question = '';
 					
 					//reset text fields
-					$('.ContRange_input').val('');		
+					$('.UploadPhoto_input').val('');		
 					//hide the form
-					$('#ContRange_Form').hide();
-					$("#display_hide").show();				
+					$('#UploadPhoto_Form').hide();
+					resetCommonFormEdit();			
+
 				}
 			
 			$('#edit_node').hide();
@@ -2085,140 +2484,338 @@
 		    					}
 		    			}	    			
 		    });
+			
+			function addDestinationDropdownMenu (nodeSequence, div)
+			{
+				var destinationList = $('<select class="addedDropdownMenu" id="destinationSelect_ConditionalTransition" />');
+				$('<option />', {value: "value", text: ' '} ).appendTo(destinationList);
+
+				for(var i = 0;i < nodeSequence.length;i++) 
+				{
+					$('<option />', {value: nodeSequence[i], text: nodeSequence[i]} ).appendTo(destinationList);
+				}
+				$('<p class="addedDropdownMenu" id="selectDestinationText">Then select in this list the <b>destination</b> task</p>').appendTo(div);
+				destinationList.appendTo(div);				
+			}
+			
+			function removeDropdownMenu()
+			{
+				$('#destinationSelect_ConditionalTransition').remove();
+				$('#selectDestinationText').remove();
+				$('.addedDropdownMenu').remove();				
+				
+			}
 		
 		//----------------------------------Question Transition - DEFAULT
-		$('#default_tran').on('click', function(e) {
-			
-			$('.question').hide();
-			$('.quesTrans').hide();
-
-			$('#default_transition').show();
-			$("#display_hide").hide();
-		});
-
-		$('#default_transition_OK').on('click', function(e) {
-			var origin      = $('#default_tran_origin').val().toUpperCase();
-			var destination = $('#default_tran_destination').val().toUpperCase();
-			
-			console.log('add a new edge');
-			
-			cy.add({
-		  	    group: "edges",
-		  	    data: { id: origin + '-' + destination, source: origin, target: destination }
-		  	});
-			
-			var tempBranch = new Branch("true",destination);
-			var condition = [];
-			condition.push(tempBranch);
-			
-			var i;
-			for (i=0;i<Campaign_Workflow.length;i++)
+		    $('#default_tran').on('click', function(e) {
+		    	
+		    	$('.question').hide();
+		    	$('.quesTrans').hide();
+				
+				$('#default_transition_Cancel').click();				
+				
+				var originList = $('<select id="originSelect" />');
+				$('<option />', {value: "value", text: ' '} ).appendTo(originList);
+				
+				for(var i = 0;i < nodeSequence.length;i++) 
 				{
-				 	if (Campaign_Workflow[i].getQuesID() == origin) 
-				 		{
-				 			console.log(origin + ' is duplicated');
-				 			Campaign_Workflow[i].getCondition().push(tempBranch);			 			
-				 		}
-				}		
-			//var temp_WorkflowElement = new Workflow_Element(origin,condition);
-			//Campaign_Workflow.push(temp_WorkflowElement);
-			
-			//reset text fields
-			$('.default_tran').val('');
-			//hide the div
-			$('#default_transition').hide();
-			
-			$("#display_hide").show();
-			 
-		});
+					$('<option />', {value: nodeSequence[i], text: nodeSequence[i]} ).appendTo(originList);
+				}
+				$('<p>Select in this list the <b>origin</b> question</p>').appendTo('#default_transition_form');
+				originList.appendTo('#default_transition_form');
+				
+				$('<br><br>').appendTo('#default_transition_form');
+				//-------------------------------
+				
+				var destinationList = $('<select id="destinationSelect" />');
+				$('<option />', {value: "value", text: ' '} ).appendTo(destinationList);
 
-		$('#default_transition_Cancel').on('click', function(e) {		
-			
-			//reset text fields
-			$('.default_tran').val('');
-			//hide the div
-			$('#default_transition').hide();	
-			
-			$("#display_hide").show();		 
-		});
+				for(var i = 0;i < nodeSequence.length;i++) 
+				{
+					$('<option />', {value: nodeSequence[i], text: nodeSequence[i]} ).appendTo(destinationList);
+				}
+				$('<p>Select in this list the <b>destination</b> question</p>').appendTo('#default_transition_form');
+				destinationList.appendTo('#default_transition_form');
+				
+				
+
+		    	$('#default_transition').show();
+		    	$("#display_hide").hide();
+		    });
+
+		    $('#default_transition_OK').on('click', function(e) {
+		    	//var origin      = $('#default_tran_origin').val().toUpperCase(); 
+		    	//var destination = $('#default_tran_destination').val().toUpperCase(); 
+				var origin         = $('#originSelect :selected').val();
+				var destination    = $('#destinationSelect :selected').val();
+		    	
+		    	console.log('add a new edge');
+		    	
+		    	cy.add({
+		      	    group: "edges",
+		      	    data: { id: origin + '-' + destination, source: origin, target: destination }
+					//data: { id: $('#originSelect :selected').val() + '-' + $('#destinationSelect :selected').val(), source: $('#originSelect :selected').val(), target: $('#destinationSelect :selected').val() }
+		      	});
+		    	
+		    	var tempBranch = new Branch("true",destination);
+		    	var condition = [];
+		    	condition.push(tempBranch);
+		    	
+		    	var i;
+		    	for (i=0;i<Campaign_Workflow.length;i++)
+		    		{
+		    		 	if (Campaign_Workflow[i].getQuesID() == origin) 
+		    		 		{
+		    		 			console.log(origin + ' is duplicated');
+		    		 			Campaign_Workflow[i].getCondition().push(tempBranch);			 			
+		    		 		}
+		    		}		
+		    	//var temp_WorkflowElement = new Workflow_Element(origin,condition);
+		    	//Campaign_Workflow.push(temp_WorkflowElement);
+		    	
+		    	//reset text fields
+		    	$('.default_tran').val('');
+		    	//hide the div
+		    	$('#default_transition').hide();
+		    	
+		    	$("#display_hide").show();
+				
+				$('#default_transition_form').empty();
+		    	 
+		    });
+
+		    $('#default_transition_Cancel').on('click', function(e) {		
+		    	
+		    	//reset text fields
+		    	$('.default_tran').val('');
+		    	//hide the div
+		    	$('#default_transition').hide();	
+		    	
+		    	$("#display_hide").show();	
+
+				$('#default_transition_form').empty();
+		    });
 		
 		//----------------------------------Question Transition - Conditional
-		$('#conditional_tran').on('click', function(e) {
-			
-			$('.question').hide();
-			$('.quesTrans').hide();
+		    $('#conditional_tran').on('click', function(e) {
+		    	
+		    	$('.question').hide();
+		    	$('.quesTrans').hide();
 
-			$('#conditional_transition').show();
-			$("#display_hide").hide();
-		});
-
-		$('#conditional_transition_Cancel').on('click', function(e) {		
-			
-			//reset text fields
-			$('.conditional_tran').val('');
-			//hide the div
-			$('#conditional_transition').hide();	
-			
-			$("#display_hide").show();
-			 
-		});
-
-		$('#conditional_transition_OK').on('click', function(e) {
-			var origin      = $('#conditional_tran_origin').val().toUpperCase();
-			var destination = $('#conditional_tran_destination').val();
-			//var expression  = $('#conditional_tran_expression').val().toUpperCase();
-			
-			var expression;
-				var primitive = $('input[name=primitive]:checked').val();
-				//alert(primitive);
+		    	$('#conditional_transition').show();
+		    	$("#display_hide").hide();
 				
-				if (primitive == 'value')
-					{
-						expression = origin + '.' + primitive + ' ' + $('#stringOperand :selected').val() + ' ' + '\'' + $('#value_parameter_0').val() + '\'';
-					}
-				else if (primitive == 'values')
-					{
-						expression = origin + '.' + primitive + '.indexOf' + '(\'' +  $('#values_parameter_0').val() + '\')' + ' > -1';	    	
-					}
-				else if (primitive == 'count')
-					{
-						expression = origin + '.' + primitive + ' ' + $('#numericOperand :selected').val() + ' ' + $('#count_parameter_0').val();
-					}
-	    
-				alert(expression);
-			
-			console.log('add a new edge');
-			console.log( $('#combo :selected').text() );
-			
-			cy.add({
-		  	    group: "edges",
-		  	    data: { id: origin + '-' + destination, source: origin, target: destination }
-		  	});
-			
-			var tempBranch = new Branch(expression,destination);
-			
-			var i;
-			for (i=0;i<Campaign_Workflow.length;i++)
+				$('.hideInitially').hide();
+				
+				//var originList = $('<select id="originSelect_ConditionalTransition" />');
+				//$('<option />', {value: "value", text: ' '} ).appendTo(originList);
+				
+				//$('#originSelect_ConditionalTransition').selectUtils('setEmpty');				
+
+				$('option', '#originSelect_ConditionalTransition').remove();
+				
+				$('<option />', {value: "", text: ' '} ).appendTo('#originSelect_ConditionalTransition');
+				
+				for(var i = 0;i < nodeSequence.length;i++) 
 				{
-				 	if (Campaign_Workflow[i].getQuesID() == origin) 
-				 		{
-				 			console.log(origin + ' is duplicated');
-				 			Campaign_Workflow[i].getCondition().push(tempBranch);			 			
-				 		}
+					$('<option />', {value: nodeSequence[i], text: nodeSequence[i]} ).appendTo('#originSelect_ConditionalTransition');
 				}
+				//originList.prependTo('#conditional_transition_form');
+				//$('<p>Select in this list the <b>origin</b> question</p>').prependTo('#conditional_transition_form');				
+				//$('<br><br>').appendTo('#default_transition_form');
+		    });
 			
-			//reset text fields
-			$('.conditional_tran').val('');
-			//hide the div
-			$('#conditional_transition').hide();
+			$('#originSelect_ConditionalTransition').on('change', function() {
 			
-			$('input[name="primitive"]').prop('checked', false);
-		    $('#value_0').css('display', 'none');
-			$('#values_0').css('display', 'none');
-			$('#count_0').css('display', 'none');
+				$('.hideInitially').hide();
 			
-			$("#display_hide").show();		
-		});
+				var origin = this.value;
+				console.log('You have selected ' + origin);	
+
+				var quesType;
+				for (var i=0;i< Question_Array.length;i++)
+				{
+					if (Question_Array[i].getID() == origin)
+						{
+							quesType = Question_Array[i].getType();
+							console.log('The origin question is of type ' + quesType);
+							
+							if ( (quesType == FreeNumericSingle_const) || (quesType == ContRange_const) )
+								{
+									
+									$('#compareNumericValueDiv').show();
+									
+									addDestinationDropdownMenu (nodeSequence, $('#compareNumericValueDiv'));
+								}
+							else if ( quesType == MultipleChoiceSingle_const )
+								{
+									var availableOption = $('<select id="availableOptionList" class="addedDropdownMenu" />');
+									$('<option />', {value: "value", text: ' '} ).appendTo(availableOption);
+									
+									for (var j=0;j<Question_Array[i].getSubcomponent().length;j++ )
+									{
+										var textValue = Question_Array[i].getSubcomponent()[j];
+										console.log(textValue);
+										$('<option />', {value: textValue, text: textValue} ).appendTo(availableOption);
+									}
+									availableOption.appendTo('#compareStringValueDiv');									
+									
+									$('#compareStringValueDiv').show();
+									
+									addDestinationDropdownMenu (nodeSequence, $('#compareStringValueDiv'));
+								}
+							else if ( quesType == MultipleChoiceMulti_const )
+								{								
+									$('#allAnswer_MultipleChoiceMulti').show();
+									
+									for (var j=0;j<Question_Array[i].getSubcomponent().length;j++ )
+									{
+										var textValue = Question_Array[i].getSubcomponent()[j];
+										console.log(textValue);
+										
+										$('<br class="addedDropdownMenu"><input type="checkbox" class="addedDropdownMenu" name="AvailableOptions" value="'+ textValue + '" id="option_' +j + '">').appendTo('#allAnswer_MultipleChoiceMulti');
+										$('<label class="addedDropdownMenu" for="option_' + j + '">' + textValue + '</label>').appendTo('#allAnswer_MultipleChoiceMulti');								
+									}
+									
+									addDestinationDropdownMenu (nodeSequence, $('#allAnswer_MultipleChoiceMulti'));											
+								}
+							else
+							{
+								$('<p class="addedDropdownMenu"> Conditional link is not available for this task </p>').appendTo('#conditional_transition_form');
+							}						
+						}				
+				}				
+			});		
+			
+
+		    $('#conditional_transition_Cancel').on('click', function(e) {		
+		    	
+		    	//reset text fields
+		    	$('.conditional_tran').val('');
+		    	//hide the div
+		    	$('#conditional_transition').hide();
+
+				$('input[name="primitive"]').prop('checked', false);
+		    	$('#value_0').css('display', 'none');
+				$('#values_0').css('display', 'none');
+				$('#count_0').css('display', 'none');
+		    	
+		    	$("#display_hide").show();
+				
+				removeDropdownMenu();		    	 
+		    });
+
+		    $('#conditional_transition_OK').on('click', function(e) {
+		    	var origin      = $('#originSelect_ConditionalTransition').val().toUpperCase();
+		    	
+				//var destination = $('#destinationSelect_ConditionalTransition').val().toUpperCase();		
+		    	
+				var expression = '';
+				
+				var quesType;
+				for (var i=0;i< Question_Array.length;i++)
+				{
+					if (Question_Array[i].getID() == origin)
+					{
+						quesType = Question_Array[i].getType();
+						console.log('For this condition, the origin question is of type ' + quesType);
+						
+						if (!( (quesType == FreeNumericSingle_const) || (quesType == ContRange_const) || (quesType == MultipleChoiceSingle_const) || (quesType == MultipleChoiceMulti_const) ))
+						{
+							console.log('Conditional link not available');
+							$('#conditional_transition_Cancel').click();
+						}
+						else
+						{
+							var allParameterCorrect = true;
+							var destination = $('#destinationSelect_ConditionalTransition').val().toUpperCase();
+							console.log('Origin is ' + origin + ' and destination is ' + destination);
+							
+							if ( (quesType == FreeNumericSingle_const) || (quesType == ContRange_const) )
+								{
+									if ( isNaN($('#threshold_0').val()) )
+									{
+										alert('please type a correct number');
+										allParameterCorrect = false;
+									}
+									expression = origin + '.value' + ' ' + $('#numericOperand :selected').val() + ' ' + $('#threshold_0').val();
+								}
+							else if ( quesType == MultipleChoiceSingle_const )
+								{
+									expression = origin + '.value' + ' ' + $('#stringOperand :selected').val() + ' ' + '\'' + $('#availableOptionList option:selected').val() + '\'';								
+								}
+							else if ( quesType == MultipleChoiceMulti_const )
+								{	
+									var selectedOption = [];
+									
+									$('input[name="AvailableOptions"]:checked').each(function() {
+									
+									   selectedOption.push(this.value); 
+									});
+									
+									console.log('Value of selectedOption is ' + JSON.stringify(selectedOption));
+									if (selectedOption.length == 0)
+									{
+										alert('PLease choose at least one option');
+										allParameterCorrect = false;
+									}
+									else // Everything is good here
+									{
+										if (selectedOption.length == 1) //  origin.values.indexOf('selectedOption') > -1
+										{
+											expression = origin + '.values.indexOf' + '(\'' +  selectedOption[0] + '\')' + ' > -1';	    												
+										}
+										else
+										{
+											for (var t=0;t < selectedOption.length-1;t++)
+											{
+												expression += '(' + origin + '.values.indexOf' + '(\'' +  selectedOption[t] + '\')' + ' > -1' + ')' + '&&'; 
+											}
+											
+											expression += '(' + origin + '.values.indexOf' + '(\'' +  selectedOption[selectedOption.length-1] + '\')' + ' > -1' + ')'; 
+										}									
+									}																
+								}						
+							//alert(expression);
+							if ( allParameterCorrect == true )
+							{
+								console.log('add a new edge');
+								console.log( $('#combo :selected').text() );
+								
+								cy.add({
+									group: "edges",
+									data: { id: origin + '-' + destination, source: origin, target: destination }
+								});
+								
+								var tempBranch = new Branch(expression,destination);
+								
+								var i;
+								for (i=0;i<Campaign_Workflow.length;i++)
+									{
+										if (Campaign_Workflow[i].getQuesID() == origin) 
+											{
+												console.log(origin + ' is duplicated');
+												Campaign_Workflow[i].getCondition().push(tempBranch);			 			
+											}
+									}
+								
+								//reset text fields
+								$('.conditional_tran').val('');
+								//hide the div
+								$('#conditional_transition').hide();
+								
+								$('input[name="primitive"]').prop('checked', false);
+								$('#value_0').css('display', 'none');
+								$('#values_0').css('display', 'none');
+								$('#count_0').css('display', 'none');
+								
+								removeDropdownMenu();	
+							}
+						}
+					}
+				}
+				
+		    });
 		
 		
 	$('#cancelOperation').on('click', function(e) {		
@@ -2248,11 +2845,18 @@
 		console.log(userID);
 		console.log(JSON.stringify(cy.json()));
 		
+		var extrinsicBooleanValue = false;
+		var incentiveList		  = [];
+		var incentiveContact	  = '';
+		
+		
 		if (StartQues == '') alert('Start question is empty');		
 		
 		else
 			{
-				var cam = new Campaign(Campaign_ID, Campaign_Description, config.onetime, expiry, start_date, end_date, geoBoolean, config.PoI_list, config.PoI_list_WebMercator,  StartQues, Question_Array, Campaign_Workflow,  userID, cy.json());
+				var cam = new Campaign(Campaign_ID, Campaign_Description, config.onetime, expiry, start_date, end_date, geoBoolean, GPS_List, 
+										Mercator_List,  StartQues, Question_Array, Campaign_Workflow,  userID, 
+										cy.json(),extrinsicBooleanValue, incentiveList, incentiveContact, showResultBooleanValue, 100);
 				console.log('-------------new Campaign config');
 				console.log( JSON.stringify(cam) );
 				
@@ -2322,6 +2926,7 @@
 			<!-- <option value="5">Audio Sensor</option> -->
 			<option value="6">Question with 1 numeric answer</option>
 			<option value="7">Number Range</option>
+			<option value="8">Type9 - Upload Photo</option>
 			
 			</select>           
           </div>         
@@ -2332,10 +2937,17 @@
 		  
           <div class="panel-body">
 		  
-		  <button id = "default_tran"     class="btn btn-primary  btn-block button_custom_color active" style="white-space:normal;" > Default link </button>            
+		  <button id = "default_tran"     class="btn btn-primary  btn-block button_custom_color active" style="white-space:normal;" > Default link </button>   
+
+		  <button id = "conditional_tran"     class="btn btn-primary  btn-block button_custom_color active" style="white-space:normal;" > Conditional link </button>            		  
                       
           </div>         
         </div>
+		
+		<br>
+		<button id = "update"             class="btn btn-primary btn-block btn-success active" ><b>  Update Campaign <span class="glyphicon glyphicon-ok"></span>  </b> </button> 
+		<br><br> 
+		<button id = "cancelOperation"      class="btn btn-primary btn-block btn-danger active" ><b> Cancel Campaign</b> </button> 
 		
 		
 </div>
@@ -2348,7 +2960,9 @@
 			  
 			  Question Text:<br>  <input type="text" class = "common_input form-control" id="common_QuesText" ><br>
 			  
-			  You can attach a photo for this question (optional)
+			  <canvas id='myCanvasCreateQues' hidden></canvas><br>
+			  
+			  <p id="photo_attach_text"> You can attach a photo for this question (optional) </p>
 			  <br>
 			  <form id="uploadForm" action="upload_ajax.php" method="post" enctype="multipart/form-data" target="upload_target" >
                      <!-- <p id="f1_upload_process">Loading...<br/><img src="loader.gif" /><br/></p> -->
@@ -2370,9 +2984,11 @@
 			  
 			  Picture for this question:<br>  <input type="text" class = "common_input form-control" id="commonEdit_QuesPicURL"  disabled ><br>
 			  
+			  <canvas id='myCanvas'></canvas><br>
+			  
 			  <button id="removePic" class="btn btn-warning" >Remove this picture</button> 		
 			  <br><br>
-			  You can attach a new photo for this question (optional)
+			  <p id="photo_attach_text_edit"> You can attach a photo for this question (optional) </p>
 			  <br>
 			  <form id="uploadFormEdit" action="upload_ajax.php" method="post" enctype="multipart/form-data" target="upload_target" >
                      <!-- <p id="f1_upload_process">Loading...<br/><img src="loader.gif" /><br/></p> -->
@@ -2468,75 +3084,87 @@
 			
 			</div>
 			
+			<!-- Form UploadPhoto -->
+      		<div id="UploadPhoto_Form"  class = "begin_step2 question UploadPhoto edit_form">
+			<br><br>		
+			<button id = "UploadPhoto_Save"    class="btn btn-success">  Save this Question</font>  </button>  
+			<button id = "UploadPhoto_Cancel"  class="btn btn-warning">  Cancel</font> </button>
+			
+			</div>	
+			
+			<!-- Default Transition form -->
 			<!-- Default Transition form -->
 			<div id="default_transition"            class = "begin_step2 quesTrans edit_form">
 			<br><br>  
 			<form id="default_transition_form"  action="">
-			Please type/select the ID of the origin and destination question
+			<!-- Please type the ID of the origin and destination question -->
 			
 			<br>
-			Origin question:        <br>  <input type="text" class = "default_tran form-control" id="default_tran_origin"><br>
-			Destination Question:   <br>  <input type="text" class = "default_tran form-control" id="default_tran_destination"><br> 
+			<!-- Origin question:        <br>  <input type="text" class = "default_tran form-control" id="default_tran_origin"><br> -->
+			<!-- Destination Question:   <br>  <input type="text" class = "default_tran form-control" id="default_tran_destination"><br>  -->
 			
 			</form>
 			
+			<br><br> 
 			<button id = "default_transition_OK"    class="btn btn-success">  OK </font>  </button>  
 			<button id = "default_transition_Cancel"  class="btn btn-warning">  Cancel</font> </button>
 			</div>
 			
 			<!-- Conditional Transition form -->
 			<div id="conditional_transition"        class = "begin_step2 quesTrans edit_form">
-			<br><br>  
-			<form id="conditional_transition_form"  action="">
-			Please type/select the ID of the origin and destination question
+			<br><br> 
 			
+			Please select the ID of the <b>origin</b> task
 			<br>
-			Origin question:        <br>  <input type="text" class = "conditional_tran form-control" id="conditional_tran_origin"><br>
-			<!-- The logical expression  <br>  <input type="text" class = "conditional_tran form-control" id="conditional_tran_expression"><br> -->
+			<select id='originSelect_ConditionalTransition' style="width: 100% !important; min-width: 100%; max-width: 100%;">
+			<option value=""></option>
 			
-			<form id="conditional">
-				<input id='' name='primitive' type='radio' value="value" />value
-				<br />
-				<input id='' name='primitive' type='radio' value="values" />values
-				<br />
-				<input id='' name='primitive' type='radio' value="count" />count
-			</form>
-			<br>
-
-				<!-- The parameter of primitive VALUE -->
-				<div id='value_0' style='display:none'>
+			
+			</select> 
+			
+			<form id="conditional_transition_form"  action="">	
+			
+				<div id='compareNumericValueDiv' class='hideInitially'>
+				<br>
+					If numeric value
+					<select id="numericOperand">  
+						  <option value=">">></option>
+						  <option value=">=">>=</option>
+						  <option value="==">=</option>	
+						  <option value="<"><</option>
+						  <option value="<="><=</option>						  
+					</select>					
+					<input type="textbox" id="threshold_0">					
+					<br>
+					
+				
+				</div>
+				
+				<div id='compareStringValueDiv' class='hideInitially'>
+				<br>
+					 If text value
 					<select id="stringOperand">  
 						  <option value="==">is</option>
 						  <option value="!=">is not</option>
 							  
-					</select>
-					<input type="textbox" id="value_parameter_0">
-				</div>
-
-				<!-- The parameter of primitive VALUES -->
-				<div id='values_0' style='display:none'>
-					contains 
-					<input type="textbox" id="values_parameter_0">
-				</div>
-
-				<!-- The parameter of primitive COUNT -->
-				<div id='count_0' style='display:none'>
-
-					<select id="numericOperand">  
-						  <option value=">">></option>
-						  <option value=">=">>=</option>
-						  <option value="==">=</option>		  
-					</select>
-					
-					<input type="textbox" id="count_parameter_0">
+					</select>	
 					
 				</div>
+				
+				<div id='allAnswer_MultipleChoiceMulti' class='hideInitially'>
+				<br>
+					 If participant selects
+					 <br>						
+					
+				</div>		
+				
 			
 			<br>
-			Destination Question:   <br>  <input type="text" class = "conditional_tran form-control" id="conditional_tran_destination"><br> 
+			
 			
 			</form>
-			
+			<br>Remember to cover all possible cases
+			<br>
 			<button id = "conditional_transition_OK"    class="btn btn-success">  OK   </button>  
 			<button id = "conditional_transition_Cancel"  class="btn btn-warning" style="white-space:normal;">  Cancel</button>
 			</div>

@@ -19,6 +19,23 @@
 	
 	<script type="text/javascript" src="login_advanced.js"></script>
 	
+	<script type="text/javascript">
+	
+	$( document ).ready(function() {
+	
+		var path = 'welcome_advanced.html';
+		history.pushState(null, null, path + window.location.search);
+		window.addEventListener('popstate', function (event) 
+		{
+			history.pushState(null, null, path + window.location.search);
+		});
+		
+		
+	});
+	</script>
+	
+	
+	
 	<style type="text/css">
 	.navbar
 	{

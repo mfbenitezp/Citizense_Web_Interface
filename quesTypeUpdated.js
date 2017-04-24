@@ -35,7 +35,7 @@ $.extend(FreeNumericSingle.prototype, {
 });
 
 var Campaign = function (CamID, CamDescription, onetime_Boolean, expiryValue, startDateValue, endDateValue, geoBoolean_input, 
-						 PoI_list_input, Mercator_format_list,startQues, quesArray,work_flow, username, cyto_config, extrinsicBooleanInput, incentiveListInput,  incentiveContactInput, showResultValue   ) {
+						 PoI_list_input, Mercator_format_list,startQues, quesArray,work_flow, username, cyto_config, extrinsicBooleanInput, incentiveListInput,  incentiveContactInput, showResultValue, secretCodeValue   ) {
 	
 	this.Campaign_ID = CamID;
 	this.Campaign_Description = CamDescription;
@@ -58,6 +58,8 @@ var Campaign = function (CamID, CamDescription, onetime_Boolean, expiryValue, st
 	
 	this.showResult = showResultValue;
 	
+	this.secretCode = secretCodeValue;
+	
 	
 }
 $.extend(Campaign.prototype, {
@@ -75,7 +77,8 @@ $.extend(Campaign.prototype, {
 	getExtrinsicBoolean:	function() {return this.extrinsicBoolean;},
 	getIncentiveList:		function() {return this.incentiveList;},
 	getIncentiveContact:	function() {return this.incentiveContact;},
-	getShowResultBoolean:	function() {return this.showResult;}
+	getShowResultBoolean:	function() {return this.showResult;},
+	getSecretCode:			function() {return this.secretCode;}
 });
 
 var GeoComponent = function(lat_input, lon_input, radius_input) {

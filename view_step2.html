@@ -436,6 +436,47 @@ $( document ).ready(function() {
 	  	  
 	    });
 		
+	//-------------------------------------------------------Hover on EDGE
+		cy.on('mousemove','edge', function(event)
+		{
+				  var edge = event.cyTarget;
+				  console.log( 'edge ' + edge.id() );				  
+				  
+				  var this_edge = cy.$('#' + edge.id());
+				  var source = this_edge.source();
+				  var target = this_edge.target();
+				  
+				  var expression = '';
+				  
+				  for (var i=0;i< Campaign_Workflow.length;i++)
+				  {				
+					if (Campaign_Workflow[i].getQuesID() == source.id())
+						{							
+							for (var j=0;j< Campaign_Workflow[i].getCondition().length;j++)
+							{
+								console.log('aaa');
+								if ( Campaign_Workflow[i].getCondition()[j].getNext() == target.id() )
+								{
+									console.log( Campaign_Workflow[i].getCondition()[j].getExpression() );
+									expression = Campaign_Workflow[i].getCondition()[j].getExpression();
+								}
+							}
+						}
+				  }
+				  
+				  $('.hoverOnEdge').remove();
+				  $('<div id="' +edge.id() +  '" class="hoverOnEdge"> This logical condition is: ' + expression + '</div>').appendTo("#cy");     	            
+		});
+		    cy.on('mouseout','edge', function(event)
+			{
+				var edge = event.cyTarget;
+				$('#' + edge.id()).remove();
+			
+				$('.hoverOnEdge').remove();
+				$('.hoverOnEdge').remove();
+		    });
+
+		
 		//-----------------------------------------------Click on NODE
 		cy.on('click', 'node', { foo: 'bar' }, function(evt){
 		

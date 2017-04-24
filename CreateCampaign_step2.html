@@ -232,6 +232,69 @@ h1 {
 		  
 		//}); // ready
 		
+		function drawImageScaled(img, ctx) 
+			{
+			   var canvas = ctx.canvas ;
+			   var hRatio = canvas.width  / img.width    ;
+			   var vRatio =  canvas.height / img.height  ;
+			   var ratio  = Math.min ( hRatio, vRatio );
+			   var centerShift_x = ( canvas.width - img.width*ratio ) / 2;
+			   var centerShift_y = ( canvas.height - img.height*ratio ) / 2;  
+			   ctx.clearRect(0,0,canvas.width, canvas.height);
+			   ctx.drawImage(img, 0,0, img.width, img.height, centerShift_x,centerShift_y,img.width*ratio, img.height*ratio);  
+			}
+			
+		function drawImageWhenCreateQues(imageSrc)
+		{
+			console.log('Full image link is ' + imageSrc);
+			var localImage = imageSrc.substring( imageSrc.lastIndexOf('\\')+1 ,imageSrc.length);
+			console.log('Local image link is ' + localImage);
+			var canvas=document.getElementById('myCanvasCreateQues');
+			$('#myCanvasCreateQues').show();
+			var ctx= canvas.getContext('2d');
+																	
+			var img = new Image();
+			img.onload= drawImageScaled.bind(null, img, ctx);
+															
+			img.src = 'Pic/' + imageSrc;			
+		}
+			
+		function drawImageOnMyCanvas(imageSrc)
+		{
+			console.log('Full image link is ' + imageSrc);
+			var localImage = imageSrc.substring( imageSrc.lastIndexOf('/')+1 ,imageSrc.length);
+			console.log('Local image link is ' + localImage);
+			var canvas=document.getElementById('myCanvas');
+			$('#myCanvas').show();
+			var ctx= canvas.getContext('2d');
+																	
+			var img = new Image();
+			img.onload= drawImageScaled.bind(null, img, ctx);
+															
+			img.src = 'Pic/' + localImage;			
+		}
+		
+		function drawBlankImage()
+		{
+			var canvas=document.getElementById('myCanvas');
+			var ctx= canvas.getContext('2d');			
+			ctx.clearRect(0, 0, canvas.width, canvas.height);
+			
+			canvas=document.getElementById('myCanvasCreateQues');
+			ctx= canvas.getContext('2d');
+			ctx.clearRect(0, 0, canvas.width, canvas.height);		
+			
+			$('#myCanvas').hide();
+			$('#myCanvasCreateQues').hide();
+			
+			/*														
+			var img = new Image();
+			img.onload= drawImageScaled.bind(null, img, ctx);
+															
+			img.src = '';*/		
+		}
+		
+		
 		//-----------------------------------------------Click on NODE
 			cy.on('click', 'node', { foo: 'bar' }, function(evt){
 				  console.log( evt.data.foo ); // 'bar'				  
@@ -264,6 +327,10 @@ h1 {
 					  	$('#commonEdit_QuesText').val(  question.getLabel()[0]   );
 					  	$('#commonEdit_QuesPicURL').val( question.getLabel()[1]   );
 						if ( question.getLabel()[1] == '' ) $('#removePic').hide();
+						else
+						{
+							drawImageOnMyCanvas(question.getLabel()[1]);
+						}
 					  	//$('#FreeTextSingle_Form_QuesAudio').val( question.getLabel()[2]   );
 					  	
 					  }
@@ -280,7 +347,11 @@ h1 {
 					  	
 					  	$('#commonEdit_QuesText').val(  question.getLabel()[0]   );
 					  	$('#commonEdit_QuesPicURL').val( question.getLabel()[1]   );
-						if ( question.getLabel()[1] == '' ) $('#removePic').hide();						  	
+						if ( question.getLabel()[1] == '' ) $('#removePic').hide();	
+						else
+						{
+							drawImageOnMyCanvas(question.getLabel()[1]);
+						}					  	
 					  	
 					  	for (var i=0;i< size;i++)
 					  		{
@@ -322,7 +393,11 @@ h1 {
 					  	
 					  	$('#commonEdit_QuesText').val(  question.getLabel()[0]   );
 					  	$('#commonEdit_QuesPicURL').val( question.getLabel()[1]   );
-						if ( question.getLabel()[1] == '' ) $('#removePic').hide();	  					  	
+						if ( question.getLabel()[1] == '' ) $('#removePic').hide();
+						else
+						{
+							drawImageOnMyCanvas(question.getLabel()[1]);
+						}						
 					  	
 					  	for (var i=0;i< size;i++)
 					  		{
@@ -366,8 +441,11 @@ h1 {
 							  	
 							  	$('#commonEdit_QuesText').val(  question.getLabel()[0]   );
 								$('#commonEdit_QuesPicURL').val( question.getLabel()[1]   );
-								if ( question.getLabel()[1] == '' ) $('#removePic').hide();	  	
-							  	
+								if ( question.getLabel()[1] == '' ) $('#removePic').hide();	 
+								else
+								{
+									drawImageOnMyCanvas(question.getLabel()[1]);
+								}								  	
 							  	
 							  	for (var i=0;i< size;i++)
 							  		{
@@ -404,7 +482,11 @@ h1 {
 						  	
 						  		$('#commonEdit_QuesText').val(  question.getLabel()[0]   );
 								$('#commonEdit_QuesPicURL').val( question.getLabel()[1]   );
-								if ( question.getLabel()[1] == '' ) $('#removePic').hide();	  
+								if ( question.getLabel()[1] == '' ) $('#removePic').hide();	 
+								else
+								{
+									drawImageOnMyCanvas(question.getLabel()[1]);
+								}	
 				 		}	
 				  else if (question.getType() == TextDisplay_const)
 				  {
@@ -413,7 +495,11 @@ h1 {
 					  	
 					  	$('#commonEdit_QuesText').val(  question.getLabel()[0]   );
 						$('#commonEdit_QuesPicURL').val( question.getLabel()[1]   );
-						if ( question.getLabel()[1] == '' ) $('#removePic').hide();	  
+						if ( question.getLabel()[1] == '' ) $('#removePic').hide();	
+						else
+						{
+							drawImageOnMyCanvas(question.getLabel()[1]);
+						}	
 					  	
 					  }
 				  else if (question.getType() == FreeNumericSingle_const)
@@ -425,13 +511,15 @@ h1 {
 					  	$('#commonEdit_QuesText').val(  question.getLabel()[0]   );
 						$('#commonEdit_QuesPicURL').val( question.getLabel()[1]   );
 						if ( question.getLabel()[1] == '' ) $('#removePic').hide();	  
+						else
+						{
+							drawImageOnMyCanvas(question.getLabel()[1]);
+						}	
 					  	
 					  }
 				  else if (question.getType() == ContRange_const)
-				  {
-				  
-						console.log('here is a ContRange question');
-				  
+				  {				  
+						console.log('here is a ContRange question');				  
 						
 					  	$('#commonDivEdit').show();
 						console.log('commonDivEdit showed');
@@ -439,7 +527,11 @@ h1 {
 					  	
 					  	$('#commonEdit_QuesText').val(  question.getLabel()[0]   );
 						$('#commonEdit_QuesPicURL').val( question.getLabel()[1]   );
-						if ( question.getLabel()[1] == '' ) $('#removePic').hide();	  
+						if ( question.getLabel()[1] == '' ) $('#removePic').hide();	
+						else
+						{
+							drawImageOnMyCanvas(question.getLabel()[1]);
+						}	
 					  	
 					  	$('#ContRange_min').val (question.getSubcomponent()[0]);
 					  	$('#ContRange_max').val (question.getSubcomponent()[1]);
@@ -454,16 +546,20 @@ h1 {
 					  	$('#commonEdit_QuesText').val(  question.getLabel()[0]   );
 						$('#commonEdit_QuesPicURL').val( question.getLabel()[1]   );
 						if ( question.getLabel()[1] == '' ) $('#removePic').hide();	
+						else
+						{
+							drawImageOnMyCanvas(question.getLabel()[1]);
+						}	
 
-						$('#uploadForm').hide();
-						$('#submitForm').hide();						
+						$('#uploadFormEdit').hide();
+					$('#uploadNewPic').hide();
+					$('#photo_attach_text_edit').hide();						
 					  	
 					  }
 				  
 				  $('#selection').val(node.id());
 				  
-				  question = null;
-				  
+				  question = null;				  
 				  
 				});
 		
@@ -475,12 +571,29 @@ h1 {
 				  console.log( 'edge ' + edge.id() );
 				  $('#selection').val(edge.id());
 				  
-				  
-				  
 				  var this_edge = cy.$('#' + edge.id());
 				  var source = this_edge.source();
 				  var target = this_edge.target();
 				  console.log(source.id() + ' -------> ' + target.id());
+
+				var expression = '';
+				  
+				  for (var i=0;i< Campaign_Workflow.length;i++)
+				  {				
+					if (Campaign_Workflow[i].getQuesID() == source.id())
+						{							
+							for (var j=0;j< Campaign_Workflow[i].getCondition().length;j++)
+							{
+								console.log('aaa');
+								if ( Campaign_Workflow[i].getCondition()[j].getNext() == target.id() )
+								{
+									console.log( Campaign_Workflow[i].getCondition()[j].getExpression() );
+									expression = Campaign_Workflow[i].getCondition()[j].getExpression();
+								}
+							}
+						}
+				  }				  
+				  
 				});
 			
 			//---------------------------------------------------Hover on NODE
@@ -527,6 +640,47 @@ h1 {
 		      $('#' + sourceName).remove();
 		  	  
 		    }); 
+			
+		//-------------------------------------------------------Hover on EDGE
+		cy.on('mousemove','edge', function(event)
+		{
+				  var edge = event.cyTarget;
+				  console.log( 'edge ' + edge.id() );				  
+				  
+				  var this_edge = cy.$('#' + edge.id());
+				  var source = this_edge.source();
+				  var target = this_edge.target();
+				  
+				  var expression = '';
+				  
+				  for (var i=0;i< Campaign_Workflow.length;i++)
+				  {				
+					if (Campaign_Workflow[i].getQuesID() == source.id())
+						{							
+							for (var j=0;j< Campaign_Workflow[i].getCondition().length;j++)
+							{
+								console.log('aaa');
+								if ( Campaign_Workflow[i].getCondition()[j].getNext() == target.id() )
+								{
+									console.log( Campaign_Workflow[i].getCondition()[j].getExpression() );
+									expression = Campaign_Workflow[i].getCondition()[j].getExpression();
+								}
+							}
+						}
+				  }
+				  
+				  $('.hoverOnEdge').remove();
+				  $('<div id="' +edge.id() +  '" class="hoverOnEdge"> This logical condition is: ' + expression + '</div>').appendTo("#cy");     	            
+		});
+		    cy.on('mouseout','edge', function(event)
+			{
+				var edge = event.cyTarget;
+				$('#' + edge.id()).remove();
+			
+				$('.hoverOnEdge').remove();
+				$('.hoverOnEdge').remove();
+		    });
+		
 		    
 		    function getNodePositionX()
 		    {
@@ -681,7 +835,7 @@ h1 {
 	      {
 	    	  $('.begin_step2').hide();
 			  resetCommonForm();
-			  $('<p class="addedText"> This task asks participants to upload a photo (either already in their phone gallery or capture using the phone camera ) </p>').prependTo('#commonDiv');
+			  $('<p class="addedText"> This task asks participants to take a photo using the phone camera </p>').prependTo('#commonDiv');
 			  $('#commonDiv').show();
 	    	  $('#UploadPhoto_Form').show();
 			  $('#uploadForm').hide();
@@ -712,15 +866,23 @@ h1 {
 		
 		$("#submitForm").click(function () {
 		
-			var now = Date();
+			var now = new Date();
+			var tail = '_' + now.getTime();
 			
-			
-            var formData = new FormData($('#uploadForm')[0]);	
-				formData.append("userID",userID);
+            var formData = new FormData($('#uploadForm')[0]);					
 			
 			selectedFile = cleaseText(document.getElementById('fileSelector').value);		
 			
-			console.log('Start uploading ' + selectedFile);
+			var originalFileName = selectedFile;
+			console.log('Original fine name is ' + originalFileName);
+			console.log('Tail is ' + tail);
+			var editedFileName = selectedFile.substring(0, selectedFile.lastIndexOf('.')) + tail + selectedFile.substring(selectedFile.lastIndexOf('.'), selectedFile.length);
+			console.log('Edited file name is ' + editedFileName);
+			selectedFile = editedFileName;
+
+			formData.append("finalName",editedFileName);			
+			
+			console.log('Start uploading ' + editedFileName);
 			
             $.ajax({
                 method: "POST",
@@ -729,6 +891,7 @@ h1 {
                 success : function( res ) {
                     if(res=="OK"){
                         alert("Upload file " + selectedFile + " successful");
+						drawImageWhenCreateQues(editedFileName);
                     }else{
                         alert("Error when upload. Please try again !");
                     }
@@ -738,21 +901,31 @@ h1 {
                 },
                 processData: false,
                 contentType: false,
-            });
-			
+            });			
         });
 		
 		$("#removePic").click(function () {  
-			$('#commonEdit_QuesPicURL').val('');    
+			$('#commonEdit_QuesPicURL').val('');  
+			drawBlankImage();	
+			$("#removePic").hide();
 					
-		});
-		
-		
+		});	
 		
 		$("#uploadNewPic").click(function () {
+			var now = new Date();
+			var tail = '_' + now.getTime();
             var formData = new FormData($('#uploadFormEdit')[0]);			
 			
-			selectedFile = cleaseText(document.getElementById('fileSelector').value);
+			selectedFile = cleaseText(document.getElementById('fileSelectorEdit').value);
+			
+			var originalFileName = selectedFile;
+			console.log('Original fine name is ' + originalFileName);
+			console.log('Tail is ' + tail);
+			var editedFileName = selectedFile.substring(0, selectedFile.lastIndexOf('.')) + tail + selectedFile.substring(selectedFile.lastIndexOf('.'), selectedFile.length);
+			console.log('Edited file name is ' + editedFileName);
+			selectedFile = editedFileName;
+			
+			formData.append("finalName",editedFileName);		
 			
 			console.log('Start uploading ' + selectedFile);
 			
@@ -763,6 +936,7 @@ h1 {
                 success : function( res ) {
                     if(res=="OK"){
                         alert("Upload file " + selectedFile + " successful");
+						drawImageOnMyCanvas(editedFileName);
                     }else{
                         alert("Error when upload. Please try again !");
                     }
@@ -786,6 +960,8 @@ h1 {
 				$('#commonDiv').hide();
 				$('.addedText').remove();
 				
+				drawBlankImage();
+				
 				//Reset quesType dropdown menu
 				$('#listQuestionType').each(function() { this.selectedIndex = 0 });
 				$('#removePic').show();
@@ -805,6 +981,8 @@ h1 {
 				//hide commonDiv
 				$('#commonDivEdit').hide();
 				$('.addedText').remove();
+				
+				drawBlankImage();
 				
 				//Reset quesType dropdown menu
 				$('#listQuestionType').each(function() { this.selectedIndex = 0 });
@@ -1164,7 +1342,7 @@ h1 {
 		    		{
 		    				var subcomponent_array = [];
 		    				var quesID = "Q" + question_number;
-		    				question_number++;
+		    				
 		    				var quesType = MultipleChoiceSingle_const;
 		    				var quesLabel = [$('#common_QuesText').val(),(selectedFile == '') ? '':'http://www.citizense.uji.es/Pic/' + selectedFile ,''/*blank value for audio URL*/];
 		    				
@@ -1178,31 +1356,43 @@ h1 {
 		    						  		if ($('#' + ID).val() != '') subcomponent_array.push(  $('#' + ID).val()  );
 		    						  }					  
 		    				  }	
+							  
+							  var numberSubcomponent = subcomponent_array.length;
+							  console.log('Number of subcomponent is ' + numberSubcomponent);
+							  
+							  if (numberSubcomponent <=1) //Not enough subcomponent
+								{
+									alert('Please make at least 2 options');									
+								}
+							else		//Everything is OK					
+							{
+								//Add the new MultipleChoiceSingle to the Question_Array of the Campaign
+								var temp = new MultipleChoiceSingle(quesID, quesType, quesLabel, subcomponent_array);
+								Question_Array.push(temp);
+								question_number++;
+								addNode(quesID);
+								addDefaultTransition(quesID);
+								
+								//reset text fields
+								$('.MultipleChoiceSingle_input').val('');
+								$(".subcomponent_MultipleChoiceSingle").remove()  ;
+								
+								//hide the form
+								$('#MultipleChoiceSingle_Form').hide();	
+								
+								//reset the variable that counts the subcomponent
+								subcomponent_count = 0;	
+								$("#display_hide").show();	
+								nodeSequence.push(quesID);
+								console.log('The nodeSequence is ' + JSON.stringify(nodeSequence));
+								
+								resetCommonForm();
+								
+								addTransition(nodeSequence);
+								checkFirstQuestion(nodeSequence, quesID);									
+							}
 		    				
-		    				//Add the new MultipleChoiceSingle to the Question_Array of the Campaign
-		    				var temp = new MultipleChoiceSingle(quesID, quesType, quesLabel, subcomponent_array);
-		    				Question_Array.push(temp);
-		    				
-		    				addNode(quesID);
-			    			addDefaultTransition(quesID);
-		    				
-		    				//reset text fields
-		    				$('.MultipleChoiceSingle_input').val('');
-		    				$(".subcomponent_MultipleChoiceSingle").remove()  ;
-		    				
-		    				//hide the form
-		    				$('#MultipleChoiceSingle_Form').hide();	
-		    				
-		    				//reset the variable that counts the subcomponent
-		    				subcomponent_count = 0;	
-		    				$("#display_hide").show();	
-		    				nodeSequence.push(quesID);
-		    				console.log('The nodeSequence is ' + JSON.stringify(nodeSequence));
-							
-							resetCommonForm();
-							
-							addTransition(nodeSequence);
-							checkFirstQuestion(nodeSequence, quesID);													
+		    																
 		    		}
 		    	else
 		    		{
@@ -1230,25 +1420,34 @@ h1 {
 		    					  		if ($('#' + ID).val() != '') subcomponent_array.push(  $('#' + ID).val()  );
 		    					  }
 		    				  }	
-		    				
-		    				//Add the new MultipleChoiceSingle to the Question_Array of the Campaign
-		    				var temp = new MultipleChoiceSingle(quesID, quesType, quesLabel, subcomponent_array);
-		    				Question_Array.push(temp);
-		    				
-		    				ID_of_edited_question = '';
-		    				
-		    				//reset text fields
-		    				$('.MultipleChoiceSingle_input').val('');
-		    				$(".subcomponent_MultipleChoiceSingle").remove()  ;
-		    				
-		    				//hide the form
-		    				$('#MultipleChoiceSingle_Form').hide();					
-		    				
-		    				//reset the variable that counts the subcomponent
-		    				subcomponent_count = 0;
-		    				resetCommonFormEdit();					    			
-		    		}	    	
-		    	
+							  
+							  var numberSubcomponent = subcomponent_array.length;
+							  console.log('Number of subcomponent is ' + numberSubcomponent);
+							  
+							  if (numberSubcomponent <=1) //Not enough subcomponent
+								{
+									alert('Please make at least 2 options');									
+								}
+							else
+							{
+								//Add the new MultipleChoiceSingle to the Question_Array of the Campaign
+								var temp = new MultipleChoiceSingle(quesID, quesType, quesLabel, subcomponent_array);
+								Question_Array.push(temp);
+								
+								ID_of_edited_question = '';
+								
+								//reset text fields
+								$('.MultipleChoiceSingle_input').val('');
+								$(".subcomponent_MultipleChoiceSingle").remove()  ;
+								
+								//hide the form
+								$('#MultipleChoiceSingle_Form').hide();					
+								
+								//reset the variable that counts the subcomponent
+								subcomponent_count = 0;
+								resetCommonFormEdit();	
+							}				    			
+		    		}	    		    	
 		    });
 		    
 		  //-------------------------------MultipleChoiceMulti----------------------------------------
@@ -1322,7 +1521,7 @@ h1 {
 		    	{
 		    			var subcomponent_array = [];
 		    			var quesID = "Q" + question_number;
-		    			question_number++;
+		    			
 		    			var quesType = MultipleChoiceMulti_const;
 		    			var quesLabel = [$('#common_QuesText').val(),(selectedFile == '') ? '':'http://www.citizense.uji.es/Pic/' + selectedFile ,''/*blank value for audio URL*/];
 		    			
@@ -1336,31 +1535,43 @@ h1 {
 		    					  		if ($('#' + ID).val() != '') subcomponent_array.push(  $('#' + ID).val()  );
 		    					  }					  
 		    			  }	
+						 
+						 var numberSubcomponent = subcomponent_array.length;
+						 console.log('Number of subcomponent is ' + numberSubcomponent);
+							  
+						  if (numberSubcomponent <=1) //Not enough subcomponent
+							{
+								alert('Please make at least 2 options');									
+							}
+						else
+						{
+							//Add the new MultipleChoiceMulti to the Question_Array of the Campaign
+							var temp = new MultipleChoiceMulti(quesID, quesType, quesLabel, subcomponent_array);
+							Question_Array.push(temp);
+							question_number++;
+							addNode(quesID);
+							addDefaultTransition(quesID);
+							
+							//reset text fields
+							$('.MultipleChoiceMulti_input').val('');
+							$(".subcomponent_MultipleChoiceMulti").remove()  ;
+							
+							//hide the form
+							$('#MultipleChoiceMulti_Form').hide();	
+							
+							//reset the variable that counts the subcomponent
+							subcomponent_count = 0;	
+							$("#display_hide").show();		
+							nodeSequence.push(quesID);
+							console.log('The nodeSequence is ' + JSON.stringify(nodeSequence));
+							
+							resetCommonForm();
+							
+							addTransition(nodeSequence);
+							checkFirstQuestion(nodeSequence, quesID);
+						}
 		    			
-		    			//Add the new MultipleChoiceMulti to the Question_Array of the Campaign
-		    			var temp = new MultipleChoiceMulti(quesID, quesType, quesLabel, subcomponent_array);
-		    			Question_Array.push(temp);
-		    			
-		    			addNode(quesID);
-		    			addDefaultTransition(quesID);
-		    			
-		    			//reset text fields
-		    			$('.MultipleChoiceMulti_input').val('');
-		    			$(".subcomponent_MultipleChoiceMulti").remove()  ;
-		    			
-		    			//hide the form
-		    			$('#MultipleChoiceMulti_Form').hide();	
-		    			
-		    			//reset the variable that counts the subcomponent
-		    			subcomponent_count = 0;	
-		    			$("#display_hide").show();		
-		    			nodeSequence.push(quesID);
-		    			console.log('The nodeSequence is ' + JSON.stringify(nodeSequence));
-						
-						resetCommonForm();
-						
-						addTransition(nodeSequence);
-						checkFirstQuestion(nodeSequence, quesID);												
+		    															
 		    	}
 		    	else
 		    		{
@@ -1387,26 +1598,34 @@ h1 {
 		    					  {
 		    					  		if ($('#' + ID).val() != '') subcomponent_array.push(  $('#' + ID).val()  );
 		    					  }
-		    				  }	
-		    				
-		    				//Add the new MultipleChoiceMulti to the Question_Array of the Campaign
-		    				var temp = new MultipleChoiceMulti(quesID, quesType, quesLabel, subcomponent_array);
-		    				Question_Array.push(temp);
-		    				
-		    				ID_of_edited_question = '';
-		    				
-		    				//reset text fields
-		    				$('.MultipleChoiceMulti_input').val('');
-		    				$(".subcomponent_MultipleChoiceMulti").remove()  ;
-		    				
-		    				//hide the form
-		    				$('#MultipleChoiceMulti_Form').hide();	
-		    				
-		    				//reset the variable that counts the subcomponent
-		    				subcomponent_count = 0;
-		    				resetCommonFormEdit();			
-
-		    			
+		    				  }
+							
+							var numberSubcomponent = subcomponent_array.length;
+							console.log('Number of subcomponent is ' + numberSubcomponent);
+								  
+							 if (numberSubcomponent <=1) //Not enough subcomponent
+								{
+									alert('Please make at least 2 options');									
+								}
+							 else
+							 {
+								//Add the new MultipleChoiceMulti to the Question_Array of the Campaign
+								var temp = new MultipleChoiceMulti(quesID, quesType, quesLabel, subcomponent_array);
+								Question_Array.push(temp);
+								
+								ID_of_edited_question = '';
+								
+								//reset text fields
+								$('.MultipleChoiceMulti_input').val('');
+								$(".subcomponent_MultipleChoiceMulti").remove()  ;
+								
+								//hide the form
+								$('#MultipleChoiceMulti_Form').hide();	
+								
+								//reset the variable that counts the subcomponent
+								subcomponent_count = 0;
+								resetCommonFormEdit();
+							 }
 		    		}
 		    	
 		    });
@@ -1713,9 +1932,7 @@ h1 {
 							
 							addTransition(nodeSequence);	
 							checkFirstQuestion(nodeSequence, quesID);
-						}
-						
-		    									
+						}	    									
 		    		}
 		    	
 		    	//A ContRange is being edited, 
@@ -1755,8 +1972,7 @@ h1 {
 							//hide the form
 							$('#ContRange_Form').hide();
 							resetCommonFormEdit();	
-						}
-		    							    			
+						}		    							    			
 		    		}		    	
 		    	
 		    });
@@ -2066,9 +2282,7 @@ h1 {
 		    $('#conditional_transition_OK').on('click', function(e) {
 		    	var origin      = $('#originSelect_ConditionalTransition').val().toUpperCase();
 		    	
-				//var destination = $('#destinationSelect_ConditionalTransition').val().toUpperCase();
-				
-				
+				//var destination = $('#destinationSelect_ConditionalTransition').val().toUpperCase();		
 		    	
 				var expression = '';
 				
@@ -2114,14 +2328,21 @@ h1 {
 									});
 									
 									console.log('Value of selectedOption is ' + JSON.stringify(selectedOption));
+									/*
 									if (selectedOption.length == 0)
 									{
 										alert('PLease choose at least one option');
 										allParameterCorrect = false;
-									}
-									else // Everything is good here
+									}*/
+									
+									/*else*/ // Everything is good here
 									{
-										if (selectedOption.length == 1) //  origin.values.indexOf('selectedOption') > -1
+										if (selectedOption.length == 0)
+										{
+											expression = origin + '.count == 0';
+										}
+										
+										else if (selectedOption.length == 1) //  origin.values.indexOf('selectedOption') > -1
 										{
 											expression = origin + '.values.indexOf' + '(\'' +  selectedOption[0] + '\')' + ' > -1';	    												
 										}
@@ -2365,6 +2586,9 @@ h1 {
 		    		
 		    		//remove subcomponent from question form
 		    		$('.subcomponent').remove();
+					
+					resetCommonFormEdit();
+					resetCommonForm();	
 		    	
 		    });
 		  
@@ -2415,7 +2639,7 @@ h1 {
 		    			console.log('Campaign ID is ' + Campaign_ID);
 		    			console.log('UserID is ' + userID);
 		    			var cam = new Campaign(Campaign_ID, Campaign_Description, onetimeValue, expiry, start_date, end_date, geoBoolean, Area_List, Area_List_WebMercator, 
-						StartQues, Question_Array, Campaign_Workflow,  userID, cy.json(), extrinsicBooleanValue, incentiveList, incentiveContact, showResult);
+						StartQues, Question_Array, Campaign_Workflow,  userID, cy.json(), extrinsicBooleanValue, incentiveList, incentiveContact, showResult, 100);
 		    			console.log( JSON.stringify(cam) );
 		    			
 		    			console.log("cy.json() produces " + JSON.stringify(cy.json()));
@@ -2787,6 +3011,8 @@ h1 {
 			  
 			  Question Text:<br>  <input type="text" class = "common_input form-control" id="common_QuesText" ><br>
 			  
+			  <canvas id='myCanvasCreateQues' hidden></canvas><br>
+			  
 			  <p id="photo_attach_text"> You can attach a photo for this question (optional) </p>
 			  <br>
 			  <form id="uploadForm" action="upload_ajax.php" method="post" enctype="multipart/form-data" target="upload_target" >
@@ -2808,9 +3034,11 @@ h1 {
 			  
 			  Picture for this question:<br>  <input type="text" class = "common_input form-control" id="commonEdit_QuesPicURL"  disabled ><br>
 			  
+			  <canvas id='myCanvas'></canvas><br>
+			  
 			  <button id="removePic" class="btn btn-warning" >Remove this picture</button> 		
 			  <br><br>
-			  You can attach a new photo for this question (optional)
+			  <p id="photo_attach_text_edit"> You can attach a photo for this question (optional) </p>
 			  <br>
 			  <form id="uploadFormEdit" action="upload_ajax.php" method="post" enctype="multipart/form-data" target="upload_target" >
                      <!-- <p id="f1_upload_process">Loading...<br/><img src="loader.gif" /><br/></p> -->

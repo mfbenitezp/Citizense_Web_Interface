@@ -78,7 +78,23 @@ body, html {
             </div>            
         </div>
         <!--Part of right-->
-        <div id="navbar" class="navbar-collapse collapse">            
+        <div id="navbar" class="navbar-collapse collapse">   
+		
+		<form class="navbar-form navbar-right">
+                <!--If the person authenticate in web page these button won't appear-->
+                <div id="loginButtonsUserNoAuth">                    
+                    
+                    <button type="button" name="logout" class="btn btn-danger" id="logout">    Log out   </button>
+                    
+                </div>
+                <!--If the person authenticate in web page these button will appear-->
+                <div id="welcomeButtonsUserAuth">
+                    <span style="color: white" id="nameSurnameLoggedUserAuth">
+                        <!--Name of user, name and surname of the login user loaded from JS-->
+                    </span>
+                </div>                
+        </form>
+		
         </div><!--/.navbar-collapse -->
     </div>
 </nav>      
